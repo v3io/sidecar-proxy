@@ -1,3 +1,0 @@
-time="2019-01-09T21:00:07+02:00" level=info msg="Starting to listen and forward" func="proxy/app.(*Server).Start" file="/Users/pavelr/iguazio/sidecar-proxy/src/proxy/app/server.go:31" forward-address="http://127.0.0.1:8082" listen-address=":8081"
-time="2019-01-10T12:43:26+02:00" level=info msg="Starting to listen and forward" func="proxy/app.(*Server).Start" file="/Users/pavelr/iguazio/sidecar-proxy/src/proxy/app/server.go:31" forward-address="http://127.0.0.1:8082" listen-address=":8081"
-time="2019-01-10T12:43:36+02:00" level=debug msg="Received new metrics request, invoking handler" func="proxy/app.(*Server).logMetrics.func1" file="/Users/pavelr/iguazio/sidecar-proxy/src/proxy/app/server.go:49" from="127.0.0.1:50962" method=GET uri=/metrics
