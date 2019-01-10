@@ -3,8 +3,7 @@ package main
 import (
 	"flag"
 	"os"
-	"github.com/v3io/proxyb.com/v3io/proxy/app"
-
+	"github.com/v3io/proxy/app"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +16,6 @@ func main() {
 
 	// logger conf
 	var logger = logrus.New()
-	logger.SetReportCaller(true)
 	logger.SetLevel(logrus.DebugLevel)
 
 	if _, err := os.Stat("log"); os.IsNotExist(err) {
