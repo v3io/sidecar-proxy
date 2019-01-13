@@ -46,7 +46,7 @@ func (s *Server) logMetrics(h http.Handler) http.Handler {
 			"from":   req.RemoteAddr,
 			"uri":    req.RequestURI,
 			"method": req.Method,
-		}).Info("Received new metrics request, invoking handler")
+		}).Debug("Received new metrics request, invoking handler")
 		h.ServeHTTP(res, req) // call original
 	})
 }
@@ -57,7 +57,7 @@ func (s *Server) handleRequestAndRedirect(res http.ResponseWriter, req *http.Req
 		"from":   req.RemoteAddr,
 		"uri":    req.RequestURI,
 		"method": req.Method,
-	}).Info("Received new request, forwarding")
+	}).Debug("Received new request, forwarding")
 
 	// parse the url
 	targetUrl, _ := url.Parse(s.forwardAddress)
