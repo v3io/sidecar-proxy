@@ -86,7 +86,6 @@ func (s *Server) handleRequestAndRedirect(res http.ResponseWriter, req *http.Req
 func (s *Server) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
 	err := WebsocketUpgrader.VerifyWebSocket(res, req, nil)
 	if err != nil {
-		s.logger.WithError(err).Debug("Not a websocket protocol")
 		return false
 	}
 	return true
