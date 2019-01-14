@@ -13,7 +13,7 @@ func main() {
 
 	// args
 	listenAddress := flag.String("listen-addr", os.Getenv("PROXY_LISTEN_ADDRESS"), "Port to listen on")
-	forwardAddress := flag.String("forward-addr", os.Getenv("PROXY_FORWARD_ADDRESS"), "IP /w port to forward to")
+	forwardAddress := flag.String("forward-addr", os.Getenv("PROXY_FORWARD_ADDRESS"), "IP /w port to forward to (without protocol)")
 	flag.Parse()
 
 	// logger conf
@@ -22,9 +22,7 @@ func main() {
 
 	proxyServer, err := app.CreateProxyServer(logger, *listenAddress, *forwardAddress)
 	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"err": err,
-		}).Fatal("Failed to create a proxy server", err)
+		logger.WithError(err).Fatal("Failed to create a proxy server")
 	}
 	proxyServer.Start("/metrics")
 }

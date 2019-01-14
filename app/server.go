@@ -1,12 +1,21 @@
 package app
 
 import (
+	"github.com/gorilla/websocket"
+	"github.com/koding/websocketproxy"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
+
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+)
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/sirupsen/logrus"
+var (
+	WebsocketUpgrader = ExtendedWebSocket{websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}}
 )
 
 type Server struct {
@@ -33,10 +42,9 @@ func (s *Server) Start(metricsEndpoint string) {
 	// start server - metrics endpoint will be handled first and not be forwarded
 	http.Handle(metricsEndpoint, s.logMetrics(promhttp.Handler()))
 	http.HandleFunc("/", s.handleRequestAndRedirect)
+
 	if err := http.ListenAndServe(s.listenAddress, nil); err != nil {
-		s.logger.WithFields(logrus.Fields{
-			"error": err,
-		}).Fatal("Failed while listening to incoming requests")
+		s.logger.WithError(err).Fatal("Failed while listening to incoming requests")
 	}
 }
 
@@ -59,12 +67,36 @@ func (s *Server) handleRequestAndRedirect(res http.ResponseWriter, req *http.Req
 		"method": req.Method,
 	}).Debug("Received new request, forwarding")
 
-	// parse the url
-	targetUrl, _ := url.Parse(s.forwardAddress)
+	// first check whether the connection can be "upgraded" to websocket, and by that decide which
+	// kind of proxy to use
+	var targetUrl *url.URL
+	if s.isWebSocket(res, req) {
+		targetUrl, _ = url.Parse("ws://" + s.forwardAddress)
+		s.serveWebsocket(res, req, targetUrl)
+	} else {
+		targetUrl, _ = url.Parse("http://" + s.forwardAddress)
+		s.serveHTTP(res, req, targetUrl)
+	}
 
-	// create the reverse proxy
+	s.logger.WithFields(logrus.Fields{
+		"url": targetUrl,
+	}).Debug("Forwarded to target")
+}
+
+func (s *Server) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
+	err := WebsocketUpgrader.VerifyWebSocket(res, req, nil)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func (s *Server) serveHTTP(res http.ResponseWriter, req *http.Request, targetUrl *url.URL) {
 	proxy := httputil.NewSingleHostReverseProxy(targetUrl)
+	proxy.ServeHTTP(res, req)
+}
 
-	// Note that ServeHttp is non blocking and uses a go routine under the hood
+func (s *Server) serveWebsocket(res http.ResponseWriter, req *http.Request, targetUrl *url.URL) {
+	proxy := websocketproxy.NewProxy(targetUrl)
 	proxy.ServeHTTP(res, req)
 }
