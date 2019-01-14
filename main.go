@@ -22,9 +22,7 @@ func main() {
 
 	proxyServer, err := app.CreateProxyServer(logger, *listenAddress, *forwardAddress)
 	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"err": err,
-		}).Fatal("Failed to create a proxy server", err)
+		logger.WithError(err).Fatal("Failed to create a proxy server")
 	}
 	proxyServer.Start("/metrics")
 }
