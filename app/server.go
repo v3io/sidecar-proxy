@@ -1,21 +1,21 @@
 package app
 
 import (
-	"net/http"
-	"net/http/httputil"
-	"net/url"
-
 	"github.com/gorilla/websocket"
 	"github.com/koding/websocketproxy"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+
+	"net/http"
+	"net/http/httputil"
+	"net/url"
 )
 
 var (
-	WebsocketUpgrader = &websocket.Upgrader{
+	WebsocketUpgrader = ExtendedWebSocket{websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
-	}
+	}}
 )
 
 type Server struct {
@@ -42,6 +42,7 @@ func (s *Server) Start(metricsEndpoint string) {
 	// start server - metrics endpoint will be handled first and not be forwarded
 	http.Handle(metricsEndpoint, s.logMetrics(promhttp.Handler()))
 	http.HandleFunc("/", s.handleRequestAndRedirect)
+
 	if err := http.ListenAndServe(s.listenAddress, nil); err != nil {
 		s.logger.WithError(err).Fatal("Failed while listening to incoming requests")
 	}
@@ -71,14 +72,22 @@ func (s *Server) handleRequestAndRedirect(res http.ResponseWriter, req *http.Req
 
 	// first check whether the connection can be "upgraded" to websocket, and by that decide which
 	// kind of proxy to use
-	_, err := WebsocketUpgrader.Upgrade(res, req, nil)
-	if err != nil {
-		s.logger.WithError(err).Debug("Not a websocket request, proceeding")
-		s.serveHTTP(res, req, targetUrl)
-	} else {
+	if s.isWebSocket(res, req) {
 		s.logger.Debug("Websocket protocol detected")
 		s.serveWebsocket(res, req, targetUrl)
+	} else {
+		s.logger.Debug("Not a websocket request, proceeding")
+		s.serveHTTP(res, req, targetUrl)
 	}
+}
+
+func (s *Server) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
+	err := WebsocketUpgrader.VerifyWebSocket(res, req, nil)
+	if err != nil {
+		s.logger.WithError(err).Debug("Not a websocket protocol")
+		return false
+	}
+	return true
 }
 
 func (s *Server) serveHTTP(res http.ResponseWriter, req *http.Request, targetUrl *url.URL) {
