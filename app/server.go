@@ -69,15 +69,18 @@ func (s *Server) handleRequestAndRedirect(res http.ResponseWriter, req *http.Req
 
 	// first check whether the connection can be "upgraded" to websocket, and by that decide which
 	// kind of proxy to use
+	var targetUrl *url.URL
 	if s.isWebSocket(res, req) {
-		s.logger.Debug("Websocket protocol detected")
-		targetUrl, _ := url.Parse("ws://" + s.forwardAddress)
+		targetUrl, _ = url.Parse("ws://" + s.forwardAddress)
 		s.serveWebsocket(res, req, targetUrl)
 	} else {
-		s.logger.Debug("Not a websocket request, proceeding")
-		targetUrl, _ := url.Parse("http://" + s.forwardAddress)
+		targetUrl, _ = url.Parse("http://" + s.forwardAddress)
 		s.serveHTTP(res, req, targetUrl)
 	}
+
+	s.logger.WithFields(logrus.Fields{
+		"url": targetUrl,
+	}).Debug("Forwarded to target")
 }
 
 func (s *Server) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
