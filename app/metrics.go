@@ -6,22 +6,28 @@ import (
 )
 
 type MetricsHandler struct {
-	logger    *logrus.Logger
-	namespace string
+	logger      *logrus.Logger
+	namespace   string
+	serviceName string
 }
 
-func CreateMetricsHandler(logger *logrus.Logger, namespace string) (*MetricsHandler, error) {
+func CreateMetricsHandler(logger *logrus.Logger, namespace string, serviceName string) (*MetricsHandler, error) {
 	return &MetricsHandler{
 		logger:    logger,
 		namespace: namespace,
+		serviceName: serviceName,
 	}, nil
 }
 
 func (m *MetricsHandler) CreateRequestsMetric() (*prometheus.Counter, error) {
+	labels := prometheus.Labels{
+		"namespace": m.namespace,
+		"service_name": m.serviceName,
+	}
 	requestsCounter := prometheus.NewCounter(prometheus.CounterOpts{
-		Namespace: m.namespace,
-		Name:      "num_of_requests",
-		Help:      "Total number of requests forwarded.",
+		Name: "num_of_requests",
+		Help: "Total number of requests forwarded.",
+		ConstLabels: labels,
 	})
 
 	if err := prometheus.Register(requestsCounter); err != nil {
