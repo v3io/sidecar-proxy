@@ -14,15 +14,22 @@ func main() {
 	// args
 	listenAddress := flag.String("listen-addr", os.Getenv("PROXY_LISTEN_ADDRESS"), "Port to listen on")
 	forwardAddress := flag.String("forward-addr", os.Getenv("PROXY_FORWARD_ADDRESS"), "IP /w port to forward to (without protocol)")
+	namespace := flag.String("namespace", os.Getenv("NAMESPACE"), "Kubernetes namespace")
 	flag.Parse()
 
 	// logger conf
 	var logger = logrus.New()
 	logger.SetLevel(logrus.DebugLevel)
 
-	proxyServer, err := app.CreateProxyServer(logger, *listenAddress, *forwardAddress)
+	// prometheus conf
+	promMetricsHandler, _ := app.CreateMetricsHandler(logger, *namespace)
+	requestMetric, _ := promMetricsHandler.CreateRequestsMetric()
+
+	// proxy server start
+	proxyServer, err := app.CreateProxyServer(logger, *listenAddress, *forwardAddress,
+		"/metrics", *requestMetric)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create a proxy server")
 	}
-	proxyServer.Start("/metrics")
+	proxyServer.Start()
 }

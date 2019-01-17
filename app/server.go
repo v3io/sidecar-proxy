@@ -1,14 +1,15 @@
 package app
 
 import (
-	"github.com/gorilla/websocket"
-	"github.com/koding/websocketproxy"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/sirupsen/logrus"
-
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+
+	"github.com/gorilla/websocket"
+	"github.com/koding/websocketproxy"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -19,20 +20,26 @@ var (
 )
 
 type Server struct {
-	logger         *logrus.Logger
-	listenAddress  string
-	forwardAddress string
+	logger          *logrus.Logger
+	listenAddress   string
+	forwardAddress  string
+	metricsEndpoint string
+	metric          prometheus.Counter
 }
 
-func CreateProxyServer(logger *logrus.Logger, listenAddress string, forwardAddress string) (*Server, error) {
+func CreateProxyServer(logger *logrus.Logger, listenAddress string, forwardAddress string, metricsEndpoint string,
+	metric prometheus.Counter) (*Server, error) {
+
 	return &Server{
-		logger:         logger,
-		listenAddress:  listenAddress,
-		forwardAddress: forwardAddress,
+		logger:          logger,
+		listenAddress:   listenAddress,
+		forwardAddress:  forwardAddress,
+		metricsEndpoint: metricsEndpoint,
+		metric:          metric,
 	}, nil
 }
 
-func (s *Server) Start(metricsEndpoint string) {
+func (s *Server) Start() {
 
 	s.logger.WithFields(logrus.Fields{
 		"listen-address":  s.listenAddress,
@@ -40,7 +47,7 @@ func (s *Server) Start(metricsEndpoint string) {
 	}).Info("Starting to listen and forward")
 
 	// start server - metrics endpoint will be handled first and not be forwarded
-	http.Handle(metricsEndpoint, s.logMetrics(promhttp.Handler()))
+	http.Handle(s.metricsEndpoint, s.logMetrics(promhttp.Handler()))
 	http.HandleFunc("/", s.handleRequestAndRedirect)
 
 	if err := http.ListenAndServe(s.listenAddress, nil); err != nil {
@@ -66,6 +73,9 @@ func (s *Server) handleRequestAndRedirect(res http.ResponseWriter, req *http.Req
 		"uri":    req.RequestURI,
 		"method": req.Method,
 	}).Debug("Received new request, forwarding")
+
+	// update counter metric
+	s.metric.Inc()
 
 	// first check whether the connection can be "upgraded" to websocket, and by that decide which
 	// kind of proxy to use
