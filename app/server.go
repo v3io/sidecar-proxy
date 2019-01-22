@@ -1,14 +1,14 @@
 package app
 
 import (
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+
 	"github.com/gorilla/websocket"
 	"github.com/koding/websocketproxy"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-
-	"net/http"
-	"net/http/httputil"
-	"net/url"
 )
 
 var (
@@ -22,17 +22,23 @@ type Server struct {
 	logger         *logrus.Logger
 	listenAddress  string
 	forwardAddress string
+	metricsHandler *MetricsHandler
+	metricName     string
 }
 
-func CreateProxyServer(logger *logrus.Logger, listenAddress string, forwardAddress string) (*Server, error) {
+func CreateProxyServer(logger *logrus.Logger, listenAddress string, forwardAddress string, metricsHandler *MetricsHandler,
+	metricName string) (*Server, error) {
+
 	return &Server{
 		logger:         logger,
 		listenAddress:  listenAddress,
 		forwardAddress: forwardAddress,
+		metricsHandler: metricsHandler,
+		metricName:     metricName,
 	}, nil
 }
 
-func (s *Server) Start(metricsEndpoint string) {
+func (s *Server) Start() {
 
 	s.logger.WithFields(logrus.Fields{
 		"listen-address":  s.listenAddress,
@@ -40,7 +46,7 @@ func (s *Server) Start(metricsEndpoint string) {
 	}).Info("Starting to listen and forward")
 
 	// start server - metrics endpoint will be handled first and not be forwarded
-	http.Handle(metricsEndpoint, s.logMetrics(promhttp.Handler()))
+	http.Handle("/metrics", s.logMetrics(promhttp.Handler()))
 	http.HandleFunc("/", s.handleRequestAndRedirect)
 
 	if err := http.ListenAndServe(s.listenAddress, nil); err != nil {
@@ -66,6 +72,9 @@ func (s *Server) handleRequestAndRedirect(res http.ResponseWriter, req *http.Req
 		"uri":    req.RequestURI,
 		"method": req.Method,
 	}).Debug("Received new request, forwarding")
+
+	// update counter metric
+	s.metricsHandler.IncrementMetric(s.metricName)
 
 	// first check whether the connection can be "upgraded" to websocket, and by that decide which
 	// kind of proxy to use
