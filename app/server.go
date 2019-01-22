@@ -7,7 +7,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/koding/websocketproxy"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
@@ -20,22 +19,22 @@ var (
 )
 
 type Server struct {
-	logger          *logrus.Logger
-	listenAddress   string
-	forwardAddress  string
-	metricsEndpoint string
-	metric          prometheus.Counter
+	logger         *logrus.Logger
+	listenAddress  string
+	forwardAddress string
+	metricsHandler *MetricsHandler
+	metricName     string
 }
 
-func CreateProxyServer(logger *logrus.Logger, listenAddress string, forwardAddress string, metricsEndpoint string,
-	metric prometheus.Counter) (*Server, error) {
+func CreateProxyServer(logger *logrus.Logger, listenAddress string, forwardAddress string, metricsHandler *MetricsHandler,
+	metricName string) (*Server, error) {
 
 	return &Server{
-		logger:          logger,
-		listenAddress:   listenAddress,
-		forwardAddress:  forwardAddress,
-		metricsEndpoint: metricsEndpoint,
-		metric:          metric,
+		logger:         logger,
+		listenAddress:  listenAddress,
+		forwardAddress: forwardAddress,
+		metricsHandler: metricsHandler,
+		metricName:     metricName,
 	}, nil
 }
 
@@ -47,7 +46,7 @@ func (s *Server) Start() {
 	}).Info("Starting to listen and forward")
 
 	// start server - metrics endpoint will be handled first and not be forwarded
-	http.Handle(s.metricsEndpoint, s.logMetrics(promhttp.Handler()))
+	http.Handle("/metrics", s.logMetrics(promhttp.Handler()))
 	http.HandleFunc("/", s.handleRequestAndRedirect)
 
 	if err := http.ListenAndServe(s.listenAddress, nil); err != nil {
@@ -75,7 +74,7 @@ func (s *Server) handleRequestAndRedirect(res http.ResponseWriter, req *http.Req
 	}).Debug("Received new request, forwarding")
 
 	// update counter metric
-	s.metric.Inc()
+	s.metricsHandler.IncrementMetric(s.metricName)
 
 	// first check whether the connection can be "upgraded" to websocket, and by that decide which
 	// kind of proxy to use

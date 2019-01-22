@@ -24,11 +24,11 @@ func main() {
 
 	// prometheus conf
 	promMetricsHandler, _ := app.CreateMetricsHandler(logger, *namespace, *serviceName)
-	requestMetric, _ := promMetricsHandler.CreateRequestsMetric()
+	requestMetricName, _ := promMetricsHandler.CreateRequestsMetric()
 
 	// proxy server start
 	proxyServer, err := app.CreateProxyServer(logger, *listenAddress, *forwardAddress,
-		"/metrics", *requestMetric)
+		promMetricsHandler, requestMetricName)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create a proxy server")
 	}
