@@ -16,6 +16,7 @@ func main() {
 	forwardAddress := flag.String("forward-addr", os.Getenv("PROXY_FORWARD_ADDRESS"), "IP /w port to forward to (without protocol)")
 	namespace := flag.String("namespace", os.Getenv("PROXY_NAMESPACE"), "Kubernetes namespace")
 	serviceName := flag.String("service-name", os.Getenv("PROXY_SERVICE_NAME"), "Service which the proxy serves")
+	instanceName := flag.String("instance-name", os.Getenv("PROXY_INSTANCE_NAME"), "Deployment instance name")
 	flag.Parse()
 
 	// logger conf
@@ -23,7 +24,7 @@ func main() {
 	logger.SetLevel(logrus.DebugLevel)
 
 	// prometheus conf
-	promMetricsHandler, _ := app.CreateMetricsHandler(logger, *namespace, *serviceName)
+	promMetricsHandler, _ := app.CreateMetricsHandler(logger, *namespace, *serviceName, *instanceName)
 	requestMetricName, _ := promMetricsHandler.CreateRequestsMetric()
 
 	// proxy server start
