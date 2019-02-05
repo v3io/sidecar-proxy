@@ -57,7 +57,7 @@ test:
 	go test -v ./app/...
 
 .PHONY: ensure-gopath
-check-gopath:
+ensure-gopath:
 ifndef GOPATH
-    $(error GOPATH must be set)
+	$(error GOPATH must be set)
 endif
