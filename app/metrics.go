@@ -35,10 +35,9 @@ func (m *MetricsHandler) CreateRequestsMetric() (string, error) {
 	if err := prometheus.Register(requestsCounter); err != nil {
 		logrus.WithError(err).Error("Metric num_of_requests failed to register")
 		return "", err
-	} else {
-		logrus.Info("Metric num_of_requests registered successfully")
 	}
 
+	logrus.Info("Metric num_of_requests registered successfully")
 	m.metrics[metricName] = requestsCounter
 
 	return metricName, nil
@@ -46,8 +45,8 @@ func (m *MetricsHandler) CreateRequestsMetric() (string, error) {
 
 func (m *MetricsHandler) IncrementMetric(metricName string) {
 	m.metrics[metricName].With(prometheus.Labels{
-		"namespace":    m.namespace,
-		"service_name": m.serviceName,
+		"namespace":     m.namespace,
+		"service_name":  m.serviceName,
 		"instance_name": m.instanceName,
 	}).Inc()
 }
