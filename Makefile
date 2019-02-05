@@ -1,11 +1,19 @@
-RELEASE_VERSION = "0.1.0"
-DOCKER_HUB_USER = "iguaziodocker"
+PROXY_PATH ?= src/github.com/v3io/proxy
+PROXY_TAG ?= latest
+PROXY_REPOSITORY ?= v3io/
+PROXY_BUILD_COMMAND ?= GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags="-s -w" -o $(GOPATH)/bin/proxy_server $(GOPATH)/$(PROXY_PATH)/main.go
 
-all: lint image
+.PHONY: all
+all: lint build
 	@echo Done.
 
-image:
-	docker build --rm --tag $(DOCKER_HUB_USER)/sidecar-proxy:$(RELEASE_VERSION) .
+.PHONY: build
+build:
+	docker build --tag=$(PROXY_REPOSITORY)sidecar-proxy:$(PROXY_TAG) .
+
+.PHONY: ensure-gopath bin
+bin:
+	$(PROXY_BUILD_COMMAND)
 
 .PHONY: lint
 lint: ensure-gopath
