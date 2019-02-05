@@ -78,34 +78,30 @@ func (s *Server) handleRequestAndRedirect(res http.ResponseWriter, req *http.Req
 
 	// first check whether the connection can be "upgraded" to websocket, and by that decide which
 	// kind of proxy to use
-	var targetUrl *url.URL
+	var targetURL *url.URL
 	if s.isWebSocket(res, req) {
-		targetUrl, _ = url.Parse("ws://" + s.forwardAddress)
-		s.serveWebsocket(res, req, targetUrl)
+		targetURL, _ = url.Parse("ws://" + s.forwardAddress)
+		s.serveWebsocket(res, req, targetURL)
 	} else {
-		targetUrl, _ = url.Parse("http://" + s.forwardAddress)
-		s.serveHTTP(res, req, targetUrl)
+		targetURL, _ = url.Parse("http://" + s.forwardAddress)
+		s.serveHTTP(res, req, targetURL)
 	}
 
 	s.logger.WithFields(logrus.Fields{
-		"url": targetUrl,
+		"url": targetURL,
 	}).Debug("Forwarded to target")
 }
 
 func (s *Server) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
-	err := WebsocketUpgrader.VerifyWebSocket(res, req, nil)
-	if err != nil {
-		return false
-	}
-	return true
+	return WebsocketUpgrader.VerifyWebSocket(res, req, nil) == nil
 }
 
-func (s *Server) serveHTTP(res http.ResponseWriter, req *http.Request, targetUrl *url.URL) {
-	proxy := httputil.NewSingleHostReverseProxy(targetUrl)
+func (s *Server) serveHTTP(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
+	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	proxy.ServeHTTP(res, req)
 }
 
-func (s *Server) serveWebsocket(res http.ResponseWriter, req *http.Request, targetUrl *url.URL) {
-	proxy := websocketproxy.NewProxy(targetUrl)
+func (s *Server) serveWebsocket(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
+	proxy := websocketproxy.NewProxy(targetURL)
 	proxy.ServeHTTP(res, req)
 }
