@@ -1,6 +1,8 @@
 label = "${UUID.randomUUID().toString()}"
 git_project = "sidecar-proxy"
 git_project_user = "gkirok"
+git_project_upstream_user = "v3io"
+git_deploy_user = "iguazio-prod-git-user"
 git_deploy_user_token = "iguazio-prod-git-user-token"
 git_deploy_user_private_key = "iguazio-prod-git-user-private-key"
 
@@ -17,8 +19,8 @@ podTemplate(label: "${git_project}-${label}", inheritFrom: "jnlp-docker-golang")
                 github.release(git_deploy_user, git_project, git_project_user, git_project_upstream_user, true, GIT_TOKEN) {
                     stage("build ${git_project} in dood") {
                         container('docker-cmd') {
-                            dir("${BUILD_FOLDER}/src/github.com/v3io/${git_project}") {
-                                common.shellc("PROXY_TAG=${DOCKER_TAG_VERSION} PROXY_REPOSITORY='' make build")
+                            dir("${github.BUILD_FOLDER}/src/github.com/${git_project_upstream_user}/${git_project}") {
+                                common.shellc("PROXY_TAG=${github.DOCKER_TAG_VERSION} PROXY_REPOSITORY='' make build")
                             }
                         }
                     }
@@ -33,7 +35,7 @@ podTemplate(label: "${git_project}-${label}", inheritFrom: "jnlp-docker-golang")
                 github.pr(git_deploy_user, git_project, git_project_user, git_project_upstream_user, true, GIT_TOKEN) {
                     stage("build ${git_project} in dood") {
                         container('golang') {
-                            dir("${github.BUILD_FOLDER}/src/github.com/v3io/${git_project}") {
+                            dir("${github.BUILD_FOLDER}/src/github.com/${git_project_upstream_user}/${git_project}") {
                                 common.shellc("PROXY_TAG=pr${env.CHANGE_ID} PROXY_REPOSITORY='' make lint")
                             }
                         }
@@ -43,4 +45,3 @@ podTemplate(label: "${git_project}-${label}", inheritFrom: "jnlp-docker-golang")
         }
     }
 }
-
