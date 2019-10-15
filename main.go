@@ -1,15 +1,18 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"os"
 
-	"github.com/v3io/proxy/app"
+	"github.com/v3io/sidecar-proxy/app"
 
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
+
+	var metricNames app.StringSliceFlag
 
 	// args
 	listenAddress := flag.String("listen-addr", os.Getenv("PROXY_LISTEN_ADDRESS"), "Port to listen on")
@@ -18,6 +21,7 @@ func main() {
 	serviceName := flag.String("service-name", os.Getenv("PROXY_SERVICE_NAME"), "Service which the proxy serves")
 	instanceName := flag.String("instance-name", os.Getenv("PROXY_INSTANCE_NAME"), "Deployment instance name")
 	logLevel := flag.String("log-level", os.Getenv("LOG_LEVEL"), "Set proxy's log level")
+	flag.Var(&metricNames, "metric-names", "Set which metrics to collect")
 	flag.Parse()
 
 	// logger conf
@@ -27,6 +31,10 @@ func main() {
 		panic(err)
 	}
 	logger.SetLevel(parsedLogLevel)
+
+	if len(metricNames) == 0 {
+		panic(errors.New("at least one metric name should be given"))
+	}
 
 	// prometheus conf
 	promMetricsHandler, _ := app.CreateMetricsHandler(logger, *namespace, *serviceName, *instanceName)
