@@ -71,7 +71,7 @@ func createMetricHandler(metricName string,
 	instanceName string) (metrics.MetricHandler, error) {
 	switch metricName {
 	case string(metrics.NumOfRequestsMetricName):
-		return metrics.NewNumOfRequstsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
+		return metrics.NewNumOfRequstsMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
 	default:
 		var metricHandler metrics.MetricHandler
 		return metricHandler, errors.New("metric handler for this metric name does not exist")

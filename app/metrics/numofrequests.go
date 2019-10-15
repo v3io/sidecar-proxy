@@ -18,7 +18,7 @@ var (
 	}}
 )
 
-type NumOfRequestsHandler struct {
+type NumOfRequestsMetricsHandler struct {
 	logger         *logrus.Logger
 	forwardAddress string
 	listenAddress  string
@@ -29,13 +29,13 @@ type NumOfRequestsHandler struct {
 	metric         *prometheus.CounterVec
 }
 
-func NewNumOfRequstsHandler(logger *logrus.Logger,
+func NewNumOfRequstsMetricsHandler(logger *logrus.Logger,
 	forwardAddress string,
 	listenAddress string,
 	namespace string,
 	serviceName string,
-	instanceName string) (*NumOfRequestsHandler, error) {
-	return &NumOfRequestsHandler{
+	instanceName string) (*NumOfRequestsMetricsHandler, error) {
+	return &NumOfRequestsMetricsHandler{
 		logger:         logger,
 		forwardAddress: forwardAddress,
 		listenAddress:  listenAddress,
@@ -46,7 +46,7 @@ func NewNumOfRequstsHandler(logger *logrus.Logger,
 	}, nil
 }
 
-func (n *NumOfRequestsHandler) RegisterMetric() error {
+func (n *NumOfRequestsMetricsHandler) RegisterMetric() error {
 	requestsCounter := prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: string(n.metricName),
 		Help: "Total number of requests forwarded.",
@@ -63,11 +63,11 @@ func (n *NumOfRequestsHandler) RegisterMetric() error {
 	return nil
 }
 
-func (n *NumOfRequestsHandler) CollectData() {
+func (n *NumOfRequestsMetricsHandler) CollectData() {
 	http.HandleFunc("/", n.handleRequestAndRedirect)
 }
 
-func (n *NumOfRequestsHandler) incrementMetric() {
+func (n *NumOfRequestsMetricsHandler) incrementMetric() {
 	n.metric.With(prometheus.Labels{
 		"namespace":     n.namespace,
 		"service_name":  n.serviceName,
@@ -76,7 +76,7 @@ func (n *NumOfRequestsHandler) incrementMetric() {
 }
 
 // Given a request send it to the appropriate url
-func (n *NumOfRequestsHandler) handleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
+func (n *NumOfRequestsMetricsHandler) handleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
 	n.logger.WithFields(logrus.Fields{
 		"from":   req.RemoteAddr,
 		"uri":    req.RequestURI,
@@ -102,16 +102,16 @@ func (n *NumOfRequestsHandler) handleRequestAndRedirect(res http.ResponseWriter,
 	}).Debug("Forwarded to target")
 }
 
-func (n *NumOfRequestsHandler) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
+func (n *NumOfRequestsMetricsHandler) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
 	return WebsocketUpgrader.VerifyWebSocket(res, req, nil) == nil
 }
 
-func (n *NumOfRequestsHandler) serveHTTP(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
+func (n *NumOfRequestsMetricsHandler) serveHTTP(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	proxy.ServeHTTP(res, req)
 }
 
-func (n *NumOfRequestsHandler) serveWebsocket(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
+func (n *NumOfRequestsMetricsHandler) serveWebsocket(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
 	proxy := websocketproxy.NewProxy(targetURL)
 	proxy.ServeHTTP(res, req)
 }
