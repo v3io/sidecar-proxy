@@ -53,11 +53,11 @@ func (n *NumOfRequestsMetricsHandler) RegisterMetric() error {
 	}, []string{"namespace", "service_name", "instance_name"})
 
 	if err := prometheus.Register(requestsCounter); err != nil {
-		n.logger.WithError(err).Error("Metric num_of_requests failed to register")
+		n.logger.WithError(err).WithField("metricName", string(n.metricName)).Error("Failed to register metric")
 		return err
 	}
 
-	n.logger.Info("Metric num_of_requests registered successfully")
+	n.logger.WithField("metricName", string(n.metricName)).Info("Metric registered successfully")
 	n.metric = requestsCounter
 
 	return nil
