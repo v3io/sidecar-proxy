@@ -8,5 +8,13 @@ type MetricHandler interface {
 type MetricName string
 
 const (
-	NumOfRequestsMetricName MetricName = "num_of_requests"
+	NumOfRequestsMetricName         MetricName = "num_of_requests"
+	JupyterKernelBusynessMetricName MetricName = "jupyter_kernel_busyness"
+)
+
+type KernelExecutionState string
+
+const (
+	IdleKernelExecutionState KernelExecutionState = "Idle"
+	BusyKernelExecutionState KernelExecutionState = "Busy"
 )
