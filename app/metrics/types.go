@@ -15,6 +15,6 @@ const (
 type KernelExecutionState string
 
 const (
-	IdleKernelExecutionState KernelExecutionState = "Idle"
-	BusyKernelExecutionState KernelExecutionState = "Busy"
+	IdleKernelExecutionState KernelExecutionState = "idle"
+	BusyKernelExecutionState KernelExecutionState = "busy"
 )
