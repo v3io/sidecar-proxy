@@ -1,4 +1,4 @@
-package app
+package utils
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 )
 
 type ExtendedWebSocket struct {
-	websocketUpgrader websocket.Upgrader
+	WebsocketUpgrader websocket.Upgrader
 }
 
 func (wu *ExtendedWebSocket) VerifyWebSocket(w http.ResponseWriter, r *http.Request, responseHeader http.Header) error {

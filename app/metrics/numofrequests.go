@@ -5,17 +5,18 @@ import (
 	"github.com/koding/websocketproxy"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"github.com/v3io/sidecar-proxy/app"
+	"github.com/v3io/proxy/app/utils"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 )
 
 var (
-	WebsocketUpgrader = app.ExtendedWebSocket{websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}}
+	WebsocketUpgrader = utils.ExtendedWebSocket{
+		WebsocketUpgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		}}
 )
 
 type NumOfRequestsMetricsHandler struct {
