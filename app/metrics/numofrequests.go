@@ -5,7 +5,7 @@ import (
 	"github.com/koding/websocketproxy"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"github.com/v3io/proxy/app/utils"
+	"github.com/v3io/sidecar-proxy/app/utils"
 	"net/http"
 	"net/http/httputil"
 	"net/url"

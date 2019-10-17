@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	"github.com/v3io/proxy/app/metrics"
+	"github.com/v3io/sidecar-proxy/app/metrics"
 	"net/http"
 )
 
