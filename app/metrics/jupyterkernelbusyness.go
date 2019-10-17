@@ -60,7 +60,7 @@ func (n *JupyterKernelBusynessMetricsHandler) CollectData() {
 	go func() {
 		for range ticker.C {
 			var kernelsList []interface{}
-			kernelsEndpoint := fmt.Sprintf("%s/api/kernels", n.forwardAddress)
+			kernelsEndpoint := fmt.Sprintf("http://%s/api/kernels", n.forwardAddress)
 			resp, err := http.Get(kernelsEndpoint)
 			if err != nil {
 				n.logger.WithError(err).WithField("kernelsEndpoint", kernelsEndpoint).Error("Failed to send request to kernels endpoint")
