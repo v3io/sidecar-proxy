@@ -101,7 +101,9 @@ func (n *JupyterKernelBusynessMetricsHandler) CollectData() {
 				n.setMetric(IdleKernelExecutionState)
 			}
 
-			resp.Body.Close()
+			if err := resp.Body.Close(); err != nil {
+				n.logger.WithError(err).Error("Failed closing response body")
+			}
 		}
 	}()
 }
