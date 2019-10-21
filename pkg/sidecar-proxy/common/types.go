@@ -4,17 +4,17 @@ import (
 	"strings"
 )
 
-type StringSliceFlag []string
+type StringArrayFlag []string
 
-func (ssf *StringSliceFlag) String() string {
+func (ssf *StringArrayFlag) String() string {
 	return strings.Join(*ssf, ", ")
 }
 
-func (ssf *StringSliceFlag) Set(value string) error {
+func (ssf *StringArrayFlag) Set(value string) error {
 	*ssf = append(*ssf, value)
 	return nil
 }
 
-func (ssf *StringSliceFlag) Type() string {
+func (ssf *StringArrayFlag) Type() string {
 	return "String"
 }

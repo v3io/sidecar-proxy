@@ -16,7 +16,7 @@ import (
 
 func main() {
 
-	var metricNames common.StringSliceFlag
+	var metricNames common.StringArrayFlag
 
 	// args
 	listenAddress := flag.String("listen-addr", os.Getenv("PROXY_LISTEN_ADDRESS"), "Port to listen on")
