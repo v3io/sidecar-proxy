@@ -2,11 +2,11 @@ package sidecar_proxy
 
 import (
 	"errors"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/jupyterkernelbusyness"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/numofrequests"
 	"net/http"
 
 	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/jupyterkernelbusyness"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/numofrequests"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"

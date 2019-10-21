@@ -7,9 +7,6 @@ import (
 
 	sidecarproxy "github.com/v3io/sidecar-proxy/pkg/sidecar-proxy"
 	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/common"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/jupyterkernelbusyness"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/numofrequests"
 
 	"github.com/sirupsen/logrus"
 )
