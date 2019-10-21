@@ -40,7 +40,7 @@ func main() {
 		panic(errors.New("at least one metric name should be given"))
 	}
 
-	// num_of_requests metric must exists since its metric handler contains the logic that makes the server a proxy,
+	// num_of_requests metric must exist since its metric handler contains the logic that makes the server a proxy,
 	// without it requests won't be forwarded to the forwardAddress
 	if !stringInSlice(string(metricshandler.NumOfRequestsMetricName), metricNames) {
 		metricNames = append(metricNames, string(metricshandler.NumOfRequestsMetricName))
