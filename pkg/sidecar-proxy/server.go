@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/common"
 	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
 	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/jupyterkernelbusyness"
 	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/numofrequests"
@@ -29,7 +30,7 @@ func NewProxyServer(logger *logrus.Logger,
 
 	// num_of_requests metric must exist since its metric handler contains the logic that makes the server a proxy,
 	// without it requests won't be forwarded to the forwardAddress
-	if !stringInSlice(string(metricshandler.NumOfRequestsMetricName), metricNames) {
+	if !common.StringInSlice(string(metricshandler.NumOfRequestsMetricName), metricNames) {
 		metricNames = append(metricNames, string(metricshandler.NumOfRequestsMetricName))
 	}
 
@@ -105,13 +106,4 @@ func createMetricHandler(metricName string,
 		var metricHandler metricshandler.MetricHandler
 		return metricHandler, errors.New("metric handler for this metric name does not exist")
 	}
-}
-
-func stringInSlice(s string, slice []string) bool {
-	for _, str := range slice {
-		if str == s {
-			return true
-		}
-	}
-	return false
 }
