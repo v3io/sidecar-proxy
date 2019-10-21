@@ -1,9 +1,9 @@
-package app
+package sidecar_proxy
 
 import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	"github.com/v3io/sidecar-proxy/app/metrics"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
 	"net/http"
 )
 
@@ -11,10 +11,10 @@ type Server struct {
 	logger          *logrus.Logger
 	listenAddress   string
 	forwardAddress  string
-	metricsHandlers []metrics.MetricHandler
+	metricsHandlers []metricshandler.MetricHandler
 }
 
-func NewProxyServer(logger *logrus.Logger, listenAddress string, forwardAddress string, metricsHandler []metrics.MetricHandler) (*Server, error) {
+func NewProxyServer(logger *logrus.Logger, listenAddress string, forwardAddress string, metricsHandler []metricshandler.MetricHandler) (*Server, error) {
 
 	return &Server{
 		logger:          logger,

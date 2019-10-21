@@ -1,19 +1,22 @@
-package main
+package sidecar_proxy
 
 import (
 	"errors"
 	"flag"
 	"os"
 
-	"github.com/v3io/sidecar-proxy/app"
-	"github.com/v3io/sidecar-proxy/app/metrics"
+	sidecarproxy "github.com/v3io/sidecar-proxy/pkg/sidecar-proxy"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/common"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/jupyterkernelbusyness"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/numofrequests"
 
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
 
-	var metricNames app.StringSliceFlag
+	var metricNames common.StringSliceFlag
 
 	// args
 	listenAddress := flag.String("listen-addr", os.Getenv("PROXY_LISTEN_ADDRESS"), "Port to listen on")
@@ -39,11 +42,11 @@ func main() {
 
 	// num_of_requests metric must exists since its metric handler contains the logic that makes the server a proxy,
 	// without it requests won't be forwarded to the forwardAddress
-	if !stringInSlice(string(metrics.NumOfRequestsMetricName), metricNames) {
-		metricNames = append(metricNames, string(metrics.NumOfRequestsMetricName))
+	if !stringInSlice(string(metricshandler.NumOfRequestsMetricName), metricNames) {
+		metricNames = append(metricNames, string(metricshandler.NumOfRequestsMetricName))
 	}
 
-	var metricHandlers []metrics.MetricHandler
+	var metricHandlers []metricshandler.MetricHandler
 	for _, metricName := range metricNames {
 		metricHandler, err := createMetricHandler(metricName, logger, *forwardAddress, *listenAddress, *namespace, *serviceName, *instanceName)
 		if err != nil {
@@ -53,7 +56,7 @@ func main() {
 	}
 
 	// proxy server start
-	proxyServer, err := app.NewProxyServer(logger, *listenAddress, *forwardAddress, metricHandlers)
+	proxyServer, err := sidecarproxy.NewProxyServer(logger, *listenAddress, *forwardAddress, metricHandlers)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create a proxy server")
 	}
@@ -68,14 +71,14 @@ func createMetricHandler(metricName string,
 	listenAddress string,
 	namespace string,
 	serviceName string,
-	instanceName string) (metrics.MetricHandler, error) {
+	instanceName string) (metricshandler.MetricHandler, error) {
 	switch metricName {
-	case string(metrics.NumOfRequestsMetricName):
-		return metrics.NewNumOfRequstsMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
-	case string(metrics.JupyterKernelBusynessMetricName):
-		return metrics.NewJupyterKernelBusynessMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
+	case string(metricshandler.NumOfRequestsMetricName):
+		return numofrequests.NewNumOfRequstsMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
+	case string(metricshandler.JupyterKernelBusynessMetricName):
+		return jupyterkernelbusyness.NewJupyterKernelBusynessMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
 	default:
-		var metricHandler metrics.MetricHandler
+		var metricHandler metricshandler.MetricHandler
 		return metricHandler, errors.New("metric handler for this metric name does not exist")
 	}
 }

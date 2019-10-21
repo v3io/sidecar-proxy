@@ -1,10 +1,11 @@
-package metrics
+package jupyterkernelbusyness
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -17,7 +18,7 @@ type JupyterKernelBusynessMetricsHandler struct {
 	namespace      string
 	serviceName    string
 	instanceName   string
-	metricName     MetricName
+	metricName     metricshandler.MetricName
 	metric         *prometheus.GaugeVec
 }
 
@@ -34,7 +35,7 @@ func NewJupyterKernelBusynessMetricsHandler(logger *logrus.Logger,
 		namespace:      namespace,
 		serviceName:    serviceName,
 		instanceName:   instanceName,
-		metricName:     JupyterKernelBusynessMetricName,
+		metricName:     metricshandler.JupyterKernelBusynessMetricName,
 	}, nil
 }
 
@@ -89,8 +90,8 @@ func (n *JupyterKernelBusynessMetricsHandler) CollectData() {
 				}
 
 				// If one of the kernels is busy - it's busy
-				if kernelExecutionState == string(BusyKernelExecutionState) {
-					n.setMetric(BusyKernelExecutionState)
+				if kernelExecutionState == string(metricshandler.BusyKernelExecutionState) {
+					n.setMetric(metricshandler.BusyKernelExecutionState)
 					foundBusyKernel = true
 					break
 				}
@@ -98,7 +99,7 @@ func (n *JupyterKernelBusynessMetricsHandler) CollectData() {
 
 			// If non of the kernels is busy - it's idle
 			if !foundBusyKernel {
-				n.setMetric(IdleKernelExecutionState)
+				n.setMetric(metricshandler.IdleKernelExecutionState)
 			}
 
 			if err := resp.Body.Close(); err != nil {
@@ -108,15 +109,15 @@ func (n *JupyterKernelBusynessMetricsHandler) CollectData() {
 	}()
 }
 
-func (n *JupyterKernelBusynessMetricsHandler) setMetric(kernelExecutionState KernelExecutionState) {
+func (n *JupyterKernelBusynessMetricsHandler) setMetric(kernelExecutionState metricshandler.KernelExecutionState) {
 	switch kernelExecutionState {
-	case BusyKernelExecutionState:
+	case metricshandler.BusyKernelExecutionState:
 		n.metric.With(prometheus.Labels{
 			"namespace":     n.namespace,
 			"service_name":  n.serviceName,
 			"instance_name": n.instanceName,
 		}).Set(1)
-	case IdleKernelExecutionState:
+	case metricshandler.IdleKernelExecutionState:
 		n.metric.With(prometheus.Labels{
 			"namespace":     n.namespace,
 			"service_name":  n.serviceName,

@@ -1,4 +1,4 @@
-package metrics
+package metricshandler
 
 type MetricHandler interface {
 	RegisterMetric() error

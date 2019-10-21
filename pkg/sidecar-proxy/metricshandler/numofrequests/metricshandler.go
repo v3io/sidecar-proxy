@@ -1,18 +1,19 @@
-package metrics
+package numofrequests
 
 import (
 	"github.com/gorilla/websocket"
 	"github.com/koding/websocketproxy"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"github.com/v3io/sidecar-proxy/app/utils"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/util"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 )
 
 var (
-	WebsocketUpgrader = utils.ExtendedWebSocket{
+	WebsocketUpgrader = util.ExtendedWebSocket{
 		WebsocketUpgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -26,7 +27,7 @@ type NumOfRequestsMetricsHandler struct {
 	namespace      string
 	serviceName    string
 	instanceName   string
-	metricName     MetricName
+	metricName     metricshandler.MetricName
 	metric         *prometheus.CounterVec
 }
 
@@ -43,7 +44,7 @@ func NewNumOfRequstsMetricsHandler(logger *logrus.Logger,
 		namespace:      namespace,
 		serviceName:    serviceName,
 		instanceName:   instanceName,
-		metricName:     NumOfRequestsMetricName,
+		metricName:     metricshandler.NumOfRequestsMetricName,
 	}, nil
 }
 
