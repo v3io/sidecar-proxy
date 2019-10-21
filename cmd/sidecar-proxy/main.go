@@ -40,54 +40,12 @@ func main() {
 		panic(errors.New("at least one metric name should be given"))
 	}
 
-	// num_of_requests metric must exist since its metric handler contains the logic that makes the server a proxy,
-	// without it requests won't be forwarded to the forwardAddress
-	if !stringInSlice(string(metricshandler.NumOfRequestsMetricName), metricNames) {
-		metricNames = append(metricNames, string(metricshandler.NumOfRequestsMetricName))
-	}
-
-	var metricHandlers []metricshandler.MetricHandler
-	for _, metricName := range metricNames {
-		metricHandler, err := createMetricHandler(metricName, logger, *forwardAddress, *listenAddress, *namespace, *serviceName, *instanceName)
-		if err != nil {
-			panic(err)
-		}
-		metricHandlers = append(metricHandlers, metricHandler)
-	}
-
 	// proxy server start
-	proxyServer, err := sidecarproxy.NewProxyServer(logger, *listenAddress, *forwardAddress, metricHandlers)
+	proxyServer, err := sidecarproxy.NewProxyServer(logger, *listenAddress, *forwardAddress, *namespace, *serviceName, *instanceName, metricNames)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create a proxy server")
 	}
 	if err = proxyServer.Start(); err != nil {
 		panic(err)
 	}
-}
-
-func createMetricHandler(metricName string,
-	logger *logrus.Logger,
-	forwardAddress string,
-	listenAddress string,
-	namespace string,
-	serviceName string,
-	instanceName string) (metricshandler.MetricHandler, error) {
-	switch metricName {
-	case string(metricshandler.NumOfRequestsMetricName):
-		return numofrequests.NewNumOfRequstsMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
-	case string(metricshandler.JupyterKernelBusynessMetricName):
-		return jupyterkernelbusyness.NewJupyterKernelBusynessMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
-	default:
-		var metricHandler metricshandler.MetricHandler
-		return metricHandler, errors.New("metric handler for this metric name does not exist")
-	}
-}
-
-func stringInSlice(s string, slice []string) bool {
-	for _, str := range slice {
-		if str == s {
-			return true
-		}
-	}
-	return false
 }
