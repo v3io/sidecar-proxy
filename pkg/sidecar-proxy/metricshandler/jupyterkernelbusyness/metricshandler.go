@@ -145,19 +145,16 @@ func (n *jupyterKernelBusynessMetricsHandler) isBusyKernelExists(kernels []kerne
 }
 
 func (n *jupyterKernelBusynessMetricsHandler) setMetric(kernelExecutionState metricshandler.KernelExecutionState) error {
+	labels := prometheus.Labels{
+		"namespace":     n.namespace,
+		"service_name":  n.serviceName,
+		"instance_name": n.instanceName,
+	}
 	switch kernelExecutionState {
 	case metricshandler.BusyKernelExecutionState:
-		n.metric.With(prometheus.Labels{
-			"namespace":     n.namespace,
-			"service_name":  n.serviceName,
-			"instance_name": n.instanceName,
-		}).Set(1)
+		n.metric.With(labels).Set(1)
 	case metricshandler.IdleKernelExecutionState:
-		n.metric.With(prometheus.Labels{
-			"namespace":     n.namespace,
-			"service_name":  n.serviceName,
-			"instance_name": n.instanceName,
-		}).Set(0)
+		n.metric.With(labels).Set(0)
 	default:
 		return errors.Errorf("Unknown kernel execution state: %s", kernelExecutionState)
 	}
