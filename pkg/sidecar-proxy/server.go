@@ -1,10 +1,12 @@
 package sidecar_proxy
 
 import (
+	"net/http"
+
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
-	"net/http"
 )
 
 type Server struct {

@@ -2,8 +2,9 @@ package util
 
 import (
 	"errors"
-	"github.com/gorilla/websocket"
 	"net/http"
+
+	"github.com/gorilla/websocket"
 )
 
 type ExtendedWebSocket struct {

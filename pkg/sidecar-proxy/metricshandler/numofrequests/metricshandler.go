@@ -1,15 +1,17 @@
 package numofrequests
 
 import (
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/util"
+
 	"github.com/gorilla/websocket"
 	"github.com/koding/websocketproxy"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/util"
-	"net/http"
-	"net/http/httputil"
-	"net/url"
 )
 
 var (

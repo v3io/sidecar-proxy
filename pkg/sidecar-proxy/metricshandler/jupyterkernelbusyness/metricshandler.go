@@ -3,12 +3,14 @@ package jupyterkernelbusyness
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/sirupsen/logrus"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 )
 
 type JupyterKernelBusynessMetricsHandler struct {
