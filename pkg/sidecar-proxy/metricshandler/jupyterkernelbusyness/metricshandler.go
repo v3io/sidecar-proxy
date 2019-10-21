@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type JupyterKernelBusynessMetricsHandler struct {
+type jupyterKernelBusynessMetricsHandler struct {
 	logger         *logrus.Logger
 	forwardAddress string
 	listenAddress  string
@@ -29,8 +29,8 @@ func NewJupyterKernelBusynessMetricsHandler(logger *logrus.Logger,
 	listenAddress string,
 	namespace string,
 	serviceName string,
-	instanceName string) (*JupyterKernelBusynessMetricsHandler, error) {
-	return &JupyterKernelBusynessMetricsHandler{
+	instanceName string) (metricshandler.MetricHandler, error) {
+	return &jupyterKernelBusynessMetricsHandler{
 		logger:         logger,
 		forwardAddress: forwardAddress,
 		listenAddress:  listenAddress,
@@ -41,7 +41,7 @@ func NewJupyterKernelBusynessMetricsHandler(logger *logrus.Logger,
 	}, nil
 }
 
-func (n *JupyterKernelBusynessMetricsHandler) RegisterMetric() error {
+func (n *jupyterKernelBusynessMetricsHandler) RegisterMetric() error {
 	gaugeVec := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: string(n.metricName),
 		Help: "Jupyter kernel busyness",
@@ -58,7 +58,7 @@ func (n *JupyterKernelBusynessMetricsHandler) RegisterMetric() error {
 	return nil
 }
 
-func (n *JupyterKernelBusynessMetricsHandler) CollectData() {
+func (n *jupyterKernelBusynessMetricsHandler) CollectData() {
 	ticker := time.NewTicker(5 * time.Second)
 	go func() {
 		for range ticker.C {
@@ -111,7 +111,7 @@ func (n *JupyterKernelBusynessMetricsHandler) CollectData() {
 	}()
 }
 
-func (n *JupyterKernelBusynessMetricsHandler) setMetric(kernelExecutionState metricshandler.KernelExecutionState) {
+func (n *jupyterKernelBusynessMetricsHandler) setMetric(kernelExecutionState metricshandler.KernelExecutionState) {
 	switch kernelExecutionState {
 	case metricshandler.BusyKernelExecutionState:
 		n.metric.With(prometheus.Labels{
