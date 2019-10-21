@@ -3,6 +3,7 @@ package jupyterkernelbusyness
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/nuclio/errors"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -48,8 +49,7 @@ func (n *jupyterKernelBusynessMetricsHandler) RegisterMetrics() error {
 	}, []string{"namespace", "service_name", "instance_name"})
 
 	if err := prometheus.Register(gaugeVec); err != nil {
-		n.logger.WithError(err).WithField("metricName", string(n.metricName)).Error("Failed to register metric")
-		return err
+		return errors.Wrapf(err, "Failed to register metric: %s", string(n.metricName))
 	}
 
 	n.logger.WithField("metricName", string(n.metricName)).Info("Metric registered successfully")
@@ -60,40 +60,41 @@ func (n *jupyterKernelBusynessMetricsHandler) RegisterMetrics() error {
 
 func (n *jupyterKernelBusynessMetricsHandler) Start() {
 	ticker := time.NewTicker(5 * time.Second)
+	errc := make(chan error)
 	go func() {
 		for range ticker.C {
 			var kernelsList []interface{}
 			kernelsEndpoint := fmt.Sprintf("http://%s/api/kernels", n.forwardAddress)
 			resp, err := http.Get(kernelsEndpoint)
 			if err != nil {
-				n.logger.WithError(err).WithField("kernelsEndpoint", kernelsEndpoint).Error("Failed to send request to kernels endpoint")
+				errc <- errors.Wrapf(err, "Failed to send request to kernels endpoint: %s", kernelsEndpoint)
 			}
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				n.logger.WithError(err).WithField("body", resp.Body).Error("Failed to read response body")
+				errc <- errors.Wrapf(err, "Failed to read response body: %s", resp.Body)
 			}
 
 			if err := json.Unmarshal(body, &kernelsList); err != nil {
-				n.logger.WithError(err).WithField("body", body).Error("Failed to unmarshal response body")
+				errc <- errors.Wrapf(err, "Failed to unmarshal response body: %s", body)
 			}
 
 			foundBusyKernel := false
 			for _, kernelStr := range kernelsList {
 				kernelMap, ok := kernelStr.(map[string]interface{})
 				if !ok {
-					n.logger.WithField("kernelStr", kernelStr).Error("Could not parse kernel string")
-					continue
+					errc <- errors.Errorf("Could not parse kernel string: %s", kernelStr)
 				}
 
 				kernelExecutionState, ok := kernelMap["execution_state"].(string)
 				if !ok {
-					n.logger.WithField("kernelExecutionState", kernelMap["execution_state"]).Error("Could not parse kernel execution state")
-					continue
+					errc <- errors.Errorf("Could not parse kernel execution state: %s", kernelMap["execution_state"])
 				}
 
 				// If one of the kernels is busy - it's busy
 				if kernelExecutionState == string(metricshandler.BusyKernelExecutionState) {
-					n.setMetric(metricshandler.BusyKernelExecutionState)
+					if err := n.setMetric(metricshandler.BusyKernelExecutionState); err != nil {
+						errc <- errors.Wrapf(err, "Failed to set metric")
+					}
 					foundBusyKernel = true
 					break
 				}
@@ -101,17 +102,25 @@ func (n *jupyterKernelBusynessMetricsHandler) Start() {
 
 			// If non of the kernels is busy - it's idle
 			if !foundBusyKernel {
-				n.setMetric(metricshandler.IdleKernelExecutionState)
+				if err := n.setMetric(metricshandler.IdleKernelExecutionState); err != nil {
+					errc <- errors.Wrapf(err, "Failed to set metric")
+				}
 			}
 
 			if err := resp.Body.Close(); err != nil {
-				n.logger.WithError(err).Error("Failed closing response body")
+				errc <- errors.Wrap(err, "Failed closing response body")
 			}
 		}
 	}()
+	for {
+		select {
+		case err := <-errc:
+			n.logger.WithError(err).Warn("Failed setting metric")
+		}
+	}
 }
 
-func (n *jupyterKernelBusynessMetricsHandler) setMetric(kernelExecutionState metricshandler.KernelExecutionState) {
+func (n *jupyterKernelBusynessMetricsHandler) setMetric(kernelExecutionState metricshandler.KernelExecutionState) error {
 	switch kernelExecutionState {
 	case metricshandler.BusyKernelExecutionState:
 		n.metric.With(prometheus.Labels{
@@ -126,6 +135,7 @@ func (n *jupyterKernelBusynessMetricsHandler) setMetric(kernelExecutionState met
 			"instance_name": n.instanceName,
 		}).Set(0)
 	default:
-		n.logger.WithField("KernelExecutionState", kernelExecutionState).Error("Unknown kernel execution state")
+		return errors.Errorf("Unknown kernel execution state: %s", kernelExecutionState)
 	}
+	return nil
 }
