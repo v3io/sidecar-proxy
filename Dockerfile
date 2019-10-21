@@ -1,4 +1,4 @@
-FROM golang:1.11 as builder
+FROM golang:1.13 as builder
 
 # copy source tree
 WORKDIR /go/src/github.com/v3io/sidecar-proxy
