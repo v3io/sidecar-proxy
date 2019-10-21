@@ -1,8 +1,8 @@
 package metricshandler
 
 type MetricHandler interface {
-	RegisterMetric() error
-	CollectData()
+	RegisterMetrics() error
+	Start()
 }
 
 type MetricName string

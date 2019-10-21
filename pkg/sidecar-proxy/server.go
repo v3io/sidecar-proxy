@@ -55,7 +55,7 @@ func (s *Server) Start() error {
 
 	s.logger.Info("Registering metrics")
 	for _, metricHandler := range s.metricsHandlers {
-		if err := metricHandler.RegisterMetric(); err != nil {
+		if err := metricHandler.RegisterMetrics(); err != nil {
 			s.logger.WithError(err).Error("Failed registering metrics")
 			return err
 		}
@@ -63,7 +63,7 @@ func (s *Server) Start() error {
 
 	s.logger.Info("Starting to collect metrics data")
 	for _, metricHandler := range s.metricsHandlers {
-		go metricHandler.CollectData()
+		go metricHandler.Start()
 	}
 
 	s.logger.Info("Starting to serve metrics")

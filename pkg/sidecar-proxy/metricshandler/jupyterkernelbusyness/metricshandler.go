@@ -41,7 +41,7 @@ func NewJupyterKernelBusynessMetricsHandler(logger *logrus.Logger,
 	}, nil
 }
 
-func (n *jupyterKernelBusynessMetricsHandler) RegisterMetric() error {
+func (n *jupyterKernelBusynessMetricsHandler) RegisterMetrics() error {
 	gaugeVec := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: string(n.metricName),
 		Help: "Jupyter kernel busyness",
@@ -58,7 +58,7 @@ func (n *jupyterKernelBusynessMetricsHandler) RegisterMetric() error {
 	return nil
 }
 
-func (n *jupyterKernelBusynessMetricsHandler) CollectData() {
+func (n *jupyterKernelBusynessMetricsHandler) Start() {
 	ticker := time.NewTicker(5 * time.Second)
 	go func() {
 		for range ticker.C {

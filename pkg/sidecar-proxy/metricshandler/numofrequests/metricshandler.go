@@ -50,7 +50,7 @@ func NewNumOfRequstsMetricsHandler(logger *logrus.Logger,
 	}, nil
 }
 
-func (n *numOfRequestsMetricsHandler) RegisterMetric() error {
+func (n *numOfRequestsMetricsHandler) RegisterMetrics() error {
 	requestsCounter := prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: string(n.metricName),
 		Help: "Total number of requests forwarded.",
@@ -67,7 +67,7 @@ func (n *numOfRequestsMetricsHandler) RegisterMetric() error {
 	return nil
 }
 
-func (n *numOfRequestsMetricsHandler) CollectData() {
+func (n *numOfRequestsMetricsHandler) Start() {
 	http.HandleFunc("/", n.handleRequestAndRedirect)
 }
 
