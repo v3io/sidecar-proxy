@@ -22,7 +22,7 @@ func main() {
 	serviceName := flag.String("service-name", os.Getenv("PROXY_SERVICE_NAME"), "Service which the proxy serves")
 	instanceName := flag.String("instance-name", os.Getenv("PROXY_INSTANCE_NAME"), "Deployment instance name")
 	logLevel := flag.String("log-level", os.Getenv("LOG_LEVEL"), "Set proxy's log level")
-	flag.Var(&metricNames, "metric-names", "Set which metrics to collect")
+	flag.Var(&metricNames, "metric-name", "Set which metrics to collect")
 	flag.Parse()
 
 	// logger conf
