@@ -1,4 +1,4 @@
-package sidecarproxy
+package main
 
 import (
 	"errors"
