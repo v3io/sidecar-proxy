@@ -11,8 +11,8 @@ import (
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/abstract"
 
 	"github.com/nuclio/errors"
+	"github.com/nuclio/logger"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/sirupsen/logrus"
 )
 
 type metricsHandler struct {
@@ -20,7 +20,7 @@ type metricsHandler struct {
 	metric *prometheus.GaugeVec
 }
 
-func NewMetricsHandler(logger *logrus.Logger,
+func NewMetricsHandler(logger logger.Logger,
 	forwardAddress string,
 	listenAddress string,
 	namespace string,
@@ -28,7 +28,8 @@ func NewMetricsHandler(logger *logrus.Logger,
 	instanceName string) (metricshandler.MetricHandler, error) {
 
 	newJupyterKernelBusynessMetricsHandler := metricsHandler{}
-	newAbstractMetricsHandler, err := abstract.NewMetricsHandler(logger,
+	newAbstractMetricsHandler, err := abstract.NewMetricsHandler(
+		logger.GetChild(string(metricshandler.JupyterKernelBusynessMetricName)),
 		forwardAddress,
 		listenAddress,
 		namespace,
@@ -54,13 +55,14 @@ func (n *metricsHandler) RegisterMetrics() error {
 		return errors.Wrapf(err, "Failed to register metric: %s", string(n.MetricName))
 	}
 
-	n.Logger.WithField("metricName", string(n.MetricName)).Info("Metric registered successfully")
+	n.Logger.InfoWith("Metric registered successfully", "metricName", string(n.MetricName))
 	n.metric = gaugeVec
 
 	return nil
 }
 
 func (n *metricsHandler) Start() {
+	n.Logger.Info("Starting jupyter kernel busyness metrics handler")
 	ticker := time.NewTicker(5 * time.Second)
 	errc := make(chan error)
 	go func() {
@@ -87,7 +89,7 @@ func (n *metricsHandler) Start() {
 	for {
 		select {
 		case err := <-errc:
-			n.Logger.WithError(err).Warn("Failed setting metric")
+			n.Logger.WarnWith("Failed setting metric", "err", err)
 		}
 	}
 }
@@ -96,6 +98,7 @@ func (n *metricsHandler) getKernels() ([]kernel, error) {
 	var parsedKernelsList []kernel
 	var kernelsList []interface{}
 	kernelsEndpoint := fmt.Sprintf("http://%s/api/kernels", n.ForwardAddress)
+	n.Logger.DebugWith("Getting Jupyter kernels")
 	resp, err := http.Get(kernelsEndpoint)
 	if err != nil {
 		return []kernel{}, errors.Wrapf(err, "Failed to send request to kernels endpoint: %s", kernelsEndpoint)
@@ -130,6 +133,7 @@ func (n *metricsHandler) getKernels() ([]kernel, error) {
 	if err := resp.Body.Close(); err != nil {
 		return []kernel{}, errors.Wrap(err, "Failed closing response body")
 	}
+	n.Logger.DebugWith("Successfully got Jupyter kernels", "kernels", parsedKernelsList)
 	return parsedKernelsList, nil
 }
 
@@ -148,6 +152,7 @@ func (n *metricsHandler) setMetric(kernelExecutionState KernelExecutionState) er
 		"service_name":  n.ServiceName,
 		"instance_name": n.InstanceName,
 	}
+	n.Logger.DebugWith("Setting metric", "labels", labels, "kernelExecutionState", kernelExecutionState)
 	switch kernelExecutionState {
 	case BusyKernelExecutionState:
 		n.metric.With(labels).Set(1)

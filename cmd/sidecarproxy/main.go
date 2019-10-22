@@ -8,6 +8,7 @@ import (
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/common"
 
+	"github.com/nuclio/loggerus"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,12 +27,15 @@ func main() {
 	flag.Parse()
 
 	// logger conf
-	var logger = logrus.New()
+	//var logger = logrus.New()
 	parsedLogLevel, err := logrus.ParseLevel(*logLevel)
 	if err != nil {
 		panic(err)
 	}
-	logger.SetLevel(parsedLogLevel)
+	logger, err := loggerus.NewTextLoggerus("main", parsedLogLevel, os.Stdout, true)
+	if err != nil {
+		panic(err)
+	}
 
 	if len(metricNames) == 0 {
 		panic(errors.New("at least one metric name should be given"))
@@ -40,7 +44,7 @@ func main() {
 	// proxy server start
 	proxyServer, err := sidecarproxy.NewProxyServer(logger, *listenAddress, *forwardAddress, *namespace, *serviceName, *instanceName, metricNames)
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to create a proxy server")
+		logger.ErrorWith("Failed to create a proxy server", "err", err)
 	}
 	if err = proxyServer.Start(); err != nil {
 		panic(err)

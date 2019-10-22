@@ -12,8 +12,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/koding/websocketproxy"
 	"github.com/nuclio/errors"
+	"github.com/nuclio/logger"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -29,7 +29,7 @@ type metricsHandler struct {
 	metric *prometheus.CounterVec
 }
 
-func NewMetricsHandler(logger *logrus.Logger,
+func NewMetricsHandler(logger logger.Logger,
 	forwardAddress string,
 	listenAddress string,
 	namespace string,
@@ -37,7 +37,8 @@ func NewMetricsHandler(logger *logrus.Logger,
 	instanceName string) (metricshandler.MetricHandler, error) {
 
 	newNumOfRequstsMetricsHandler := metricsHandler{}
-	newAbstractMetricsHandler, err := abstract.NewMetricsHandler(logger,
+	newAbstractMetricsHandler, err := abstract.NewMetricsHandler(
+		logger.GetChild(string(metricshandler.NumOfRequestsMetricName)),
 		forwardAddress,
 		listenAddress,
 		namespace,
@@ -60,11 +61,11 @@ func (n *metricsHandler) RegisterMetrics() error {
 	}, []string{"namespace", "service_name", "instance_name"})
 
 	if err := prometheus.Register(requestsCounter); err != nil {
-		n.Logger.WithError(err).WithField("metricName", string(n.MetricName)).Error("Failed to register metric")
+		n.Logger.ErrorWith("Failed to register metric", "err", err, "metricName", string(n.MetricName))
 		return err
 	}
 
-	n.Logger.WithField("metricName", string(n.MetricName)).Info("Metric registered successfully")
+	n.Logger.InfoWith("Metric registered successfully", "metricName", string(n.MetricName))
 	n.metric = requestsCounter
 
 	return nil
@@ -84,11 +85,10 @@ func (n *metricsHandler) incrementMetric() {
 
 // Given a request send it to the appropriate url
 func (n *metricsHandler) handleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
-	n.Logger.WithFields(logrus.Fields{
-		"from":   req.RemoteAddr,
-		"uri":    req.RequestURI,
-		"method": req.Method,
-	}).Debug("Received new request, forwarding")
+	n.Logger.DebugWith("Received new request, forwarding",
+		"from", req.RemoteAddr,
+		"uri", req.RequestURI,
+		"method", req.Method)
 
 	// update counter metric
 	n.incrementMetric()
@@ -104,9 +104,7 @@ func (n *metricsHandler) handleRequestAndRedirect(res http.ResponseWriter, req *
 		n.serveHTTP(res, req, targetURL)
 	}
 
-	n.Logger.WithFields(logrus.Fields{
-		"url": targetURL,
-	}).Debug("Forwarded to target")
+	n.Logger.DebugWith("Forwarded to target", "url", targetURL)
 }
 
 func (n *metricsHandler) isWebSocket(res http.ResponseWriter, req *http.Request) bool {

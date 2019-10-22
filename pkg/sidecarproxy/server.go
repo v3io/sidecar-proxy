@@ -9,18 +9,18 @@ import (
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/jupyterkernelbusyness"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/numofrequests"
 
+	"github.com/nuclio/logger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/sirupsen/logrus"
 )
 
 type Server struct {
-	logger          *logrus.Logger
+	logger          logger.Logger
 	listenAddress   string
 	forwardAddress  string
 	metricsHandlers []metricshandler.MetricHandler
 }
 
-func NewProxyServer(logger *logrus.Logger,
+func NewProxyServer(logger logger.Logger,
 	listenAddress string,
 	forwardAddress string,
 	namespace string,
@@ -44,7 +44,7 @@ func NewProxyServer(logger *logrus.Logger,
 	}
 
 	return &Server{
-		logger:          logger,
+		logger:          logger.GetChild("server"),
 		listenAddress:   listenAddress,
 		forwardAddress:  forwardAddress,
 		metricsHandlers: metricHandlers,
@@ -56,12 +56,12 @@ func (s *Server) Start() error {
 	s.logger.Info("Registering metrics")
 	for _, metricHandler := range s.metricsHandlers {
 		if err := metricHandler.RegisterMetrics(); err != nil {
-			s.logger.WithError(err).Error("Failed registering metrics")
+			s.logger.ErrorWith("Failed registering metrics", "err", err)
 			return err
 		}
 	}
 
-	s.logger.Info("Starting to collect metrics data")
+	s.logger.Info("Starting metrics handlers")
 	for _, metricHandler := range s.metricsHandlers {
 		go metricHandler.Start()
 	}
@@ -72,7 +72,7 @@ func (s *Server) Start() error {
 	http.Handle("/metrics", s.logMetrics(promhttp.Handler()))
 
 	if err := http.ListenAndServe(s.listenAddress, nil); err != nil {
-		s.logger.WithError(err).Fatal("Failed while listening to incoming requests")
+		s.logger.ErrorWith("Failed while listening to incoming requests", "err", err)
 		return err
 	}
 
@@ -81,17 +81,16 @@ func (s *Server) Start() error {
 
 func (s *Server) logMetrics(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		s.logger.WithFields(logrus.Fields{
-			"from":   req.RemoteAddr,
-			"uri":    req.RequestURI,
-			"method": req.Method,
-		}).Debug("Received new metrics request, invoking handler")
+		s.logger.DebugWith("Received new metrics request, invoking handler",
+			"from", req.RemoteAddr,
+			"uri", req.RequestURI,
+			"method", req.Method)
 		h.ServeHTTP(res, req) // call original
 	})
 }
 
 func createMetricHandler(metricName string,
-	logger *logrus.Logger,
+	logger logger.Logger,
 	forwardAddress string,
 	listenAddress string,
 	namespace string,

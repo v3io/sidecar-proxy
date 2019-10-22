@@ -3,11 +3,11 @@ package abstract
 import (
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler"
 
-	"github.com/sirupsen/logrus"
+	"github.com/nuclio/logger"
 )
 
 type MetricsHandler struct {
-	Logger         *logrus.Logger
+	Logger         logger.Logger
 	ForwardAddress string
 	ListenAddress  string
 	Namespace      string
@@ -16,7 +16,7 @@ type MetricsHandler struct {
 	MetricName     metricshandler.MetricName
 }
 
-func NewMetricsHandler(logger *logrus.Logger,
+func NewMetricsHandler(logger logger.Logger,
 	forwardAddress string,
 	listenAddress string,
 	namespace string,
