@@ -1,9 +1,20 @@
 package jupyterkernelbusyness
 
-import "github.com/nuclio/errors"
+import (
+	"encoding/json"
+	"github.com/nuclio/errors"
+)
 
 type kernel struct {
-	executionState KernelExecutionState
+	ExecutionState KernelExecutionState `json:"execution_state,omitempty"`
+}
+
+func (k kernel) String() string {
+	out, err := json.Marshal(k)
+	if err != nil {
+		panic(err)
+	}
+	return string(out)
 }
 
 type KernelExecutionState string

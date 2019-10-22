@@ -124,7 +124,7 @@ func (n *metricsHandler) getKernels() ([]kernel, error) {
 		if err != nil {
 			return []kernel{}, errors.Wrapf(err, "Failed to parse kernel execution state: %s", kernelExecutionStateStr)
 		}
-		parsedKernelsList = append(parsedKernelsList, kernel{executionState: kernelExecutionState})
+		parsedKernelsList = append(parsedKernelsList, kernel{ExecutionState: kernelExecutionState})
 	}
 
 	if err := resp.Body.Close(); err != nil {
@@ -136,7 +136,7 @@ func (n *metricsHandler) getKernels() ([]kernel, error) {
 
 func (n *metricsHandler) isBusyKernelExists(kernels []kernel) bool {
 	for _, kernel := range kernels {
-		if kernel.executionState == BusyKernelExecutionState {
+		if kernel.ExecutionState == BusyKernelExecutionState {
 			return true
 		}
 	}
@@ -149,7 +149,7 @@ func (n *metricsHandler) setMetric(kernelExecutionState KernelExecutionState) er
 		"service_name":  n.ServiceName,
 		"instance_name": n.InstanceName,
 	}
-	n.Logger.DebugWith("Setting metric", "labels", labels, "kernelExecutionState", kernelExecutionState)
+	n.Logger.DebugWith("Setting metric", "kernelExecutionState", kernelExecutionState, "labels", labels)
 	switch kernelExecutionState {
 	case BusyKernelExecutionState:
 		n.metric.With(labels).Set(1)
