@@ -18,14 +18,12 @@ bin:
 .PHONY: lint
 lint: ensure-gopath
 	@echo Installing linters...
-	go get -u gopkg.in/alecthomas/gometalinter.v2
-	@$(GOPATH)/bin/gometalinter.v2 --install
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(GOPATH)/bin v1.21.0
 
 	@echo Linting...
-	@$(GOPATH)/bin/gometalinter.v2 \
+	@$(GOPATH)/bin/golangci-lint run \
 		--deadline=300s \
 		--disable-all \
-		--enable-gc \
 		--enable=deadcode \
 		--enable=goconst \
 		--enable=gofmt \
@@ -44,7 +42,7 @@ lint: ensure-gopath
 		--exclude="comment on" \
 		--exclude="error should be the last" \
 		--exclude="should have comment" \
-		./app/...
+		./pkg/...
 
 	@echo Done.
 

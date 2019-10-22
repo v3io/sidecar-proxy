@@ -86,11 +86,8 @@ func (n *metricsHandler) Start() {
 			}
 		}
 	}()
-	for {
-		select {
-		case err := <-errc:
-			n.Logger.WarnWith("Failed setting metric", "err", err)
-		}
+	for err := range errc {
+		n.Logger.WarnWith("Failed setting metric", "err", err)
 	}
 }
 
