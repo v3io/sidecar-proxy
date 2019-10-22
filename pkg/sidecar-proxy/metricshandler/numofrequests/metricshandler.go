@@ -1,6 +1,8 @@
 package numofrequests
 
 import (
+	"github.com/nuclio/errors"
+	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/abstract"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -22,66 +24,67 @@ var (
 		}}
 )
 
-type numOfRequestsMetricsHandler struct {
-	logger         *logrus.Logger
-	forwardAddress string
-	listenAddress  string
-	namespace      string
-	serviceName    string
-	instanceName   string
-	metricName     metricshandler.MetricName
-	metric         *prometheus.CounterVec
+type metricsHandler struct {
+	*abstract.MetricsHandler
+	metric *prometheus.CounterVec
 }
 
-func NewNumOfRequstsMetricsHandler(logger *logrus.Logger,
+func NewMetricsHandler(logger *logrus.Logger,
 	forwardAddress string,
 	listenAddress string,
 	namespace string,
 	serviceName string,
 	instanceName string) (metricshandler.MetricHandler, error) {
-	return &numOfRequestsMetricsHandler{
-		logger:         logger,
-		forwardAddress: forwardAddress,
-		listenAddress:  listenAddress,
-		namespace:      namespace,
-		serviceName:    serviceName,
-		instanceName:   instanceName,
-		metricName:     metricshandler.NumOfRequestsMetricName,
-	}, nil
+
+	newNumOfRequstsMetricsHandler := metricsHandler{}
+	newAbstractMetricsHandler, err := abstract.NewMetricsHandler(logger,
+		forwardAddress,
+		listenAddress,
+		namespace,
+		serviceName,
+		instanceName,
+		metricshandler.NumOfRequestsMetricName)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to create abstract metric handler")
+	}
+
+	newNumOfRequstsMetricsHandler.MetricsHandler = newAbstractMetricsHandler
+
+	return &newNumOfRequstsMetricsHandler, nil
 }
 
-func (n *numOfRequestsMetricsHandler) RegisterMetrics() error {
+func (n *metricsHandler) RegisterMetrics() error {
 	requestsCounter := prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: string(n.metricName),
+		Name: string(n.MetricName),
 		Help: "Total number of requests forwarded.",
 	}, []string{"namespace", "service_name", "instance_name"})
 
 	if err := prometheus.Register(requestsCounter); err != nil {
-		n.logger.WithError(err).WithField("metricName", string(n.metricName)).Error("Failed to register metric")
+		n.Logger.WithError(err).WithField("metricName", string(n.MetricName)).Error("Failed to register metric")
 		return err
 	}
 
-	n.logger.WithField("metricName", string(n.metricName)).Info("Metric registered successfully")
+	n.Logger.WithField("metricName", string(n.MetricName)).Info("Metric registered successfully")
 	n.metric = requestsCounter
 
 	return nil
 }
 
-func (n *numOfRequestsMetricsHandler) Start() {
+func (n *metricsHandler) Start() {
 	http.HandleFunc("/", n.handleRequestAndRedirect)
 }
 
-func (n *numOfRequestsMetricsHandler) incrementMetric() {
+func (n *metricsHandler) incrementMetric() {
 	n.metric.With(prometheus.Labels{
-		"namespace":     n.namespace,
-		"service_name":  n.serviceName,
-		"instance_name": n.instanceName,
+		"namespace":     n.Namespace,
+		"service_name":  n.ServiceName,
+		"instance_name": n.InstanceName,
 	}).Inc()
 }
 
 // Given a request send it to the appropriate url
-func (n *numOfRequestsMetricsHandler) handleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
-	n.logger.WithFields(logrus.Fields{
+func (n *metricsHandler) handleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
+	n.Logger.WithFields(logrus.Fields{
 		"from":   req.RemoteAddr,
 		"uri":    req.RequestURI,
 		"method": req.Method,
@@ -94,28 +97,28 @@ func (n *numOfRequestsMetricsHandler) handleRequestAndRedirect(res http.Response
 	// kind of proxy to use
 	var targetURL *url.URL
 	if n.isWebSocket(res, req) {
-		targetURL, _ = url.Parse("ws://" + n.forwardAddress)
+		targetURL, _ = url.Parse("ws://" + n.ForwardAddress)
 		n.serveWebsocket(res, req, targetURL)
 	} else {
-		targetURL, _ = url.Parse("http://" + n.forwardAddress)
+		targetURL, _ = url.Parse("http://" + n.ForwardAddress)
 		n.serveHTTP(res, req, targetURL)
 	}
 
-	n.logger.WithFields(logrus.Fields{
+	n.Logger.WithFields(logrus.Fields{
 		"url": targetURL,
 	}).Debug("Forwarded to target")
 }
 
-func (n *numOfRequestsMetricsHandler) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
+func (n *metricsHandler) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
 	return WebsocketUpgrader.VerifyWebSocket(res, req, nil) == nil
 }
 
-func (n *numOfRequestsMetricsHandler) serveHTTP(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
+func (n *metricsHandler) serveHTTP(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	proxy.ServeHTTP(res, req)
 }
 
-func (n *numOfRequestsMetricsHandler) serveWebsocket(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
+func (n *metricsHandler) serveWebsocket(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
 	proxy := websocketproxy.NewProxy(targetURL)
 	proxy.ServeHTTP(res, req)
 }

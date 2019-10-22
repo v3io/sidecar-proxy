@@ -99,9 +99,9 @@ func createMetricHandler(metricName string,
 	instanceName string) (metricshandler.MetricHandler, error) {
 	switch metricName {
 	case string(metricshandler.NumOfRequestsMetricName):
-		return numofrequests.NewNumOfRequstsMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
+		return numofrequests.NewMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
 	case string(metricshandler.JupyterKernelBusynessMetricName):
-		return jupyterkernelbusyness.NewJupyterKernelBusynessMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
+		return jupyterkernelbusyness.NewMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
 	default:
 		var metricHandler metricshandler.MetricHandler
 		return metricHandler, errors.New("metric handler for this metric name does not exist")

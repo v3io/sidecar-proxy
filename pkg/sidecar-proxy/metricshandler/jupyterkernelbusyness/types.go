@@ -1,20 +1,10 @@
-package metricshandler
+package jupyterkernelbusyness
 
-import (
-	"github.com/nuclio/errors"
-)
+import "github.com/nuclio/errors"
 
-type MetricHandler interface {
-	RegisterMetrics() error
-	Start()
+type kernel struct {
+	executionState KernelExecutionState
 }
-
-type MetricName string
-
-const (
-	NumOfRequestsMetricName         MetricName = "num_of_requests"
-	JupyterKernelBusynessMetricName MetricName = "jupyter_kernel_busyness"
-)
 
 type KernelExecutionState string
 
@@ -23,7 +13,7 @@ const (
 	BusyKernelExecutionState KernelExecutionState = "busy"
 )
 
-func ParseKernelExecutionState(kernelExecutionStateStr string) (KernelExecutionState, error) {
+func parseKernelExecutionState(kernelExecutionStateStr string) (KernelExecutionState, error) {
 	switch kernelExecutionStateStr {
 	case string(BusyKernelExecutionState):
 		return BusyKernelExecutionState, nil
