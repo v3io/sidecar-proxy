@@ -1,8 +1,9 @@
 package abstract
 
 import (
+	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler"
+
 	"github.com/sirupsen/logrus"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
 )
 
 type MetricsHandler struct {

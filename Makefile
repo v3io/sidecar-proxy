@@ -9,7 +9,7 @@ all: lint build
 
 .PHONY: build
 build:
-	docker build -f cmd/sidecar-proxy/Dockerfile --tag=$(PROXY_REPOSITORY)sidecar-proxy:$(PROXY_TAG) .
+	docker build -f cmd/sidecarproxy/Dockerfile --tag=$(PROXY_REPOSITORY)sidecar-proxy:$(PROXY_TAG) .
 
 .PHONY: ensure-gopath bin
 bin:

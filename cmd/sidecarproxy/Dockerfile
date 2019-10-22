@@ -5,7 +5,7 @@ WORKDIR /go/src/github.com/v3io/sidecar-proxy
 COPY . .
 
 # build the app
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags="-s -w" -o proxy_server cmd/sidecar-proxy/main.go
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags="-s -w" -o proxy_server cmd/sidecarproxy/main.go
 
 #
 # Output stage: Copies binary to an alpine based image

@@ -3,14 +3,14 @@ package jupyterkernelbusyness
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/nuclio/errors"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler/abstract"
 	"io/ioutil"
 	"net/http"
 	"time"
 
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/metricshandler"
+	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler"
+	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/abstract"
 
+	"github.com/nuclio/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )

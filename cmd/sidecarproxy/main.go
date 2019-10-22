@@ -1,12 +1,12 @@
-package sidecar_proxy
+package sidecarproxy
 
 import (
 	"errors"
 	"flag"
 	"os"
 
-	sidecarproxy "github.com/v3io/sidecar-proxy/pkg/sidecar-proxy"
-	"github.com/v3io/sidecar-proxy/pkg/sidecar-proxy/common"
+	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy"
+	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/common"
 
 	"github.com/sirupsen/logrus"
 )
