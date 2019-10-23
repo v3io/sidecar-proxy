@@ -8,7 +8,6 @@ import (
 	"github.com/v3io/sidecar-proxy/pkg/common"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy"
 
-	"github.com/nuclio/errors"
 	"github.com/nuclio/loggerus"
 	"github.com/sirupsen/logrus"
 )
