@@ -1,19 +1,18 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"os"
 
 	"github.com/v3io/sidecar-proxy/pkg/common"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy"
 
+	"github.com/nuclio/errors"
 	"github.com/nuclio/loggerus"
 	"github.com/sirupsen/logrus"
 )
 
-func main() {
-
+func run() error {
 	var metricNames common.StringArrayFlag
 
 	// args
@@ -29,23 +28,32 @@ func main() {
 	// logger conf
 	parsedLogLevel, err := logrus.ParseLevel(*logLevel)
 	if err != nil {
-		panic(err)
+		errors.Wrap(err, "Failed to parse log level")
 	}
 	logger, err := loggerus.NewTextLoggerus("main", parsedLogLevel, os.Stdout, true)
 	if err != nil {
-		panic(err)
+		errors.Wrap(err, "Failed to create new logger")
 	}
 
 	if len(metricNames) == 0 {
-		panic(errors.New("at least one metric name should be given"))
+		return errors.New("at least one metric name should be given")
 	}
 
 	// server start
 	server, err := sidecarproxy.NewServer(logger, *listenAddress, *forwardAddress, *namespace, *serviceName, *instanceName, metricNames)
 	if err != nil {
-		panic(err)
+		errors.Wrap(err, "Failed to create new server")
 	}
 	if err = server.Start(); err != nil {
-		panic(err)
+		errors.Wrap(err, "Failed to start server")
 	}
+}
+
+func main() {
+	if err := run(); err != nil {
+		errors.PrintErrorStack(os.Stderr, err, 5)
+		os.Exit(1)
+	}
+
+	os.Exit(0)
 }

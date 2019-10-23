@@ -1,10 +1,10 @@
 package util
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/nuclio/errors"
 )
 
 type ExtendedWebSocket struct {
