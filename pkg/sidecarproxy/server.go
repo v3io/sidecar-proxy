@@ -1,13 +1,10 @@
 package sidecarproxy
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/v3io/sidecar-proxy/pkg/common"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler"
-	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/jupyterkernelbusyness"
-	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/numofrequests"
 
 	"github.com/nuclio/logger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -36,7 +33,7 @@ func NewServer(logger logger.Logger,
 
 	var metricHandlers []metricshandler.MetricHandler
 	for _, metricName := range metricNames {
-		metricHandler, err := createMetricHandler(metricName, logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
+		metricHandler, err := metricshandler.Create(metricName, logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
 		if err != nil {
 			panic(err)
 		}
@@ -87,22 +84,4 @@ func (s *Server) logMetrics(h http.Handler) http.Handler {
 			"method", req.Method)
 		h.ServeHTTP(res, req) // call original
 	})
-}
-
-func createMetricHandler(metricName string,
-	logger logger.Logger,
-	forwardAddress string,
-	listenAddress string,
-	namespace string,
-	serviceName string,
-	instanceName string) (metricshandler.MetricHandler, error) {
-	switch metricName {
-	case string(metricshandler.NumOfRequestsMetricName):
-		return numofrequests.NewMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
-	case string(metricshandler.JupyterKernelBusynessMetricName):
-		return jupyterkernelbusyness.NewMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
-	default:
-		var metricHandler metricshandler.MetricHandler
-		return metricHandler, errors.New("metric handler for this metric name does not exist")
-	}
 }
