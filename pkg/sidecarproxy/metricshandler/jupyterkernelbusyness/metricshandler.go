@@ -67,7 +67,7 @@ func (n *metricsHandler) Start() error {
 	go func() {
 		for range ticker.C {
 			if err := n.updateMetric(); err != nil {
-				n.Logger.WarnWith("Failed updating metric", "err", err)
+				n.Logger.WarnWith("Failed updating metric", "err", errors.GetErrorStackString(err, 10))
 			}
 		}
 	}()
