@@ -47,6 +47,8 @@ func run() error {
 	if err = server.Start(); err != nil {
 		errors.Wrap(err, "Failed to start server")
 	}
+
+	return nil
 }
 
 func main() {
