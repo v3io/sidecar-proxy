@@ -10,7 +10,7 @@ addons:
 
 language: go
 go_import_path: github.com/v3io/sidecar-proxy
-go: "1.11"
+go: "1.13"
 
 script:
   - make
