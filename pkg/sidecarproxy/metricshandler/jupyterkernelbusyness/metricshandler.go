@@ -72,8 +72,8 @@ func (n *metricsHandler) Start() {
 				errc <- errors.Wrap(err, "Failed to get kernels")
 			}
 
-			isBusyKernelExists := n.isBusyKernelExists(kernels)
-			if isBusyKernelExists {
+			busyKernelExists := n.searchBusyKernels(kernels)
+			if busyKernelExists {
 				if err := n.setMetric(BusyKernelExecutionState); err != nil {
 					errc <- errors.Wrapf(err, "Failed to set metric")
 				}
@@ -134,7 +134,7 @@ func (n *metricsHandler) getKernels() ([]kernel, error) {
 	return parsedKernelsList, nil
 }
 
-func (n *metricsHandler) isBusyKernelExists(kernels []kernel) bool {
+func (n *metricsHandler) searchBusyKernels(kernels []kernel) bool {
 	for _, kernel := range kernels {
 		if kernel.ExecutionState == BusyKernelExecutionState {
 			return true
