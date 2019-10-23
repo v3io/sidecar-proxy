@@ -40,12 +40,12 @@ func main() {
 		panic(errors.New("at least one metric name should be given"))
 	}
 
-	// proxy server start
-	proxyServer, err := sidecarproxy.NewProxyServer(logger, *listenAddress, *forwardAddress, *namespace, *serviceName, *instanceName, metricNames)
+	// server start
+	server, err := sidecarproxy.NewServer(logger, *listenAddress, *forwardAddress, *namespace, *serviceName, *instanceName, metricNames)
 	if err != nil {
 		logger.ErrorWith("Failed to create a proxy server", "err", err)
 	}
-	if err = proxyServer.Start(); err != nil {
+	if err = server.Start(); err != nil {
 		panic(err)
 	}
 }

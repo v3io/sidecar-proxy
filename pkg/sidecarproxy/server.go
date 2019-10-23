@@ -20,7 +20,7 @@ type Server struct {
 	metricsHandlers []metricshandler.MetricHandler
 }
 
-func NewProxyServer(logger logger.Logger,
+func NewServer(logger logger.Logger,
 	listenAddress string,
 	forwardAddress string,
 	namespace string,
