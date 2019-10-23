@@ -131,9 +131,8 @@ func (n *metricsHandler) forwardRequest(res http.ResponseWriter, req *http.Reque
 func (n *metricsHandler) getProxyHandler(res http.ResponseWriter, req *http.Request) http.Handler {
 	if n.isWebSocket(res, req) {
 		return n.webSocketProxy
-	} else {
-		return n.httpProxy
 	}
+	return n.httpProxy
 }
 
 func (n *metricsHandler) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
