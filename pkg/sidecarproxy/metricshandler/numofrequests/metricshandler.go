@@ -34,7 +34,7 @@ func NewMetricsHandler(logger logger.Logger,
 	listenAddress string,
 	namespace string,
 	serviceName string,
-	instanceName string) (metricshandler.MetricHandler, error) {
+	instanceName string) (metricshandler.MetricsHandler, error) {
 
 	numOfRequstsMetricsHandler := metricsHandler{}
 	abstractMetricsHandler, err := abstract.NewMetricsHandler(

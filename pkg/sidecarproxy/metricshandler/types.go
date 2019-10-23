@@ -1,6 +1,6 @@
 package metricshandler
 
-type MetricHandler interface {
+type MetricsHandler interface {
 	RegisterMetrics() error
 	Start()
 }

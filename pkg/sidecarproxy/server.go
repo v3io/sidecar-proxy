@@ -14,7 +14,7 @@ type Server struct {
 	logger          logger.Logger
 	listenAddress   string
 	forwardAddress  string
-	metricsHandlers []metricshandler.MetricHandler
+	metricsHandlers []metricshandler.MetricsHandler
 }
 
 func NewServer(logger logger.Logger,
@@ -31,36 +31,36 @@ func NewServer(logger logger.Logger,
 		metricNames = append(metricNames, string(metricshandler.NumOfRequestsMetricName))
 	}
 
-	var metricHandlers []metricshandler.MetricHandler
+	var metricsHandlers []metricshandler.MetricsHandler
 	for _, metricName := range metricNames {
-		metricHandler, err := metricshandler.Create(metricName, logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
+		metricsHandler, err := metricshandler.Create(metricName, logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
 		if err != nil {
 			panic(err)
 		}
-		metricHandlers = append(metricHandlers, metricHandler)
+		metricsHandlers = append(metricsHandlers, metricsHandler)
 	}
 
 	return &Server{
 		logger:          logger.GetChild("server"),
 		listenAddress:   listenAddress,
 		forwardAddress:  forwardAddress,
-		metricsHandlers: metricHandlers,
+		metricsHandlers: metricsHandlers,
 	}, nil
 }
 
 func (s *Server) Start() error {
 
 	s.logger.Info("Registering metrics")
-	for _, metricHandler := range s.metricsHandlers {
-		if err := metricHandler.RegisterMetrics(); err != nil {
+	for _, metricsHandler := range s.metricsHandlers {
+		if err := metricsHandler.RegisterMetrics(); err != nil {
 			s.logger.ErrorWith("Failed registering metrics", "err", err)
 			return err
 		}
 	}
 
 	s.logger.Info("Starting metrics handlers")
-	for _, metricHandler := range s.metricsHandlers {
-		go metricHandler.Start()
+	for _, metricsHandler := range s.metricsHandlers {
+		go metricsHandler.Start()
 	}
 
 	s.logger.Info("Registering metrics endpoint")

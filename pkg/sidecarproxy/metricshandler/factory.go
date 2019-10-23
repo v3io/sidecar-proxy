@@ -14,14 +14,14 @@ func Create(metricName string,
 	listenAddress string,
 	namespace string,
 	serviceName string,
-	instanceName string) (MetricHandler, error) {
+	instanceName string) (MetricsHandler, error) {
 	switch metricName {
 	case string(NumOfRequestsMetricName):
 		return numofrequests.NewMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
 	case string(JupyterKernelBusynessMetricName):
 		return jupyterkernelbusyness.NewMetricsHandler(logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
 	default:
-		var metricHandler MetricHandler
-		return metricHandler, errors.New("metric handler for this metric name does not exist")
+		var metricsHandler MetricsHandler
+		return metricsHandler, errors.New("metric handler for this metric name does not exist")
 	}
 }
