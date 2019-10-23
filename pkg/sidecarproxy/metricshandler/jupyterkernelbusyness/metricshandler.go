@@ -73,17 +73,15 @@ func (n *metricsHandler) Start() {
 			}
 
 			busyKernelExists := n.searchBusyKernels(kernels)
+			var metricValue int
 			if busyKernelExists {
-				if err := n.setMetric(BusyKernelExecutionState); err != nil {
-					errc <- errors.Wrapf(err, "Failed to set metric")
-				}
+				metricValue = 1
 			} else {
 
-				// If none of the kernels is busy - it's idle
-				if err := n.setMetric(IdleKernelExecutionState); err != nil {
-					errc <- errors.Wrapf(err, "Failed to set metric")
-				}
+				// If none of the kernels is busy - it's idle - set metric to 0
+				metricValue = 0
 			}
+			n.setMetric(metricValue)
 		}
 	}()
 	for err := range errc {
@@ -143,20 +141,12 @@ func (n *metricsHandler) searchBusyKernels(kernels []kernel) bool {
 	return false
 }
 
-func (n *metricsHandler) setMetric(kernelExecutionState KernelExecutionState) error {
+func (n *metricsHandler) setMetric(metricValue int) {
 	labels := prometheus.Labels{
 		"namespace":     n.Namespace,
 		"service_name":  n.ServiceName,
 		"instance_name": n.InstanceName,
 	}
-	n.Logger.DebugWith("Setting metric", "kernelExecutionState", kernelExecutionState, "labels", labels)
-	switch kernelExecutionState {
-	case BusyKernelExecutionState:
-		n.metric.With(labels).Set(1)
-	case IdleKernelExecutionState:
-		n.metric.With(labels).Set(0)
-	default:
-		return errors.Errorf("Unknown kernel execution state: %s", kernelExecutionState)
-	}
-	return nil
+	n.Logger.DebugWith("Setting metric", "metricValue", metricValue, "labels", labels)
+	n.metric.With(labels).Set(float64(metricValue))
 }
