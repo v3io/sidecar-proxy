@@ -27,8 +27,8 @@ func NewMetricsHandler(logger logger.Logger,
 	serviceName string,
 	instanceName string) (metricshandler.MetricHandler, error) {
 
-	newJupyterKernelBusynessMetricsHandler := metricsHandler{}
-	newAbstractMetricsHandler, err := abstract.NewMetricsHandler(
+	jupyterKernelBusynessMetricsHandler := metricsHandler{}
+	abstractMetricsHandler, err := abstract.NewMetricsHandler(
 		logger.GetChild(string(metricshandler.JupyterKernelBusynessMetricName)),
 		forwardAddress,
 		listenAddress,
@@ -40,9 +40,9 @@ func NewMetricsHandler(logger logger.Logger,
 		return nil, errors.Wrap(err, "Failed to create abstract metric handler")
 	}
 
-	newJupyterKernelBusynessMetricsHandler.MetricsHandler = newAbstractMetricsHandler
+	jupyterKernelBusynessMetricsHandler.MetricsHandler = abstractMetricsHandler
 
-	return &newJupyterKernelBusynessMetricsHandler, nil
+	return &jupyterKernelBusynessMetricsHandler, nil
 }
 
 func (n *metricsHandler) RegisterMetrics() error {

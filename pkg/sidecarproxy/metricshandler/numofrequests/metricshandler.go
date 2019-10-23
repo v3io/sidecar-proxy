@@ -36,8 +36,8 @@ func NewMetricsHandler(logger logger.Logger,
 	serviceName string,
 	instanceName string) (metricshandler.MetricHandler, error) {
 
-	newNumOfRequstsMetricsHandler := metricsHandler{}
-	newAbstractMetricsHandler, err := abstract.NewMetricsHandler(
+	numOfRequstsMetricsHandler := metricsHandler{}
+	abstractMetricsHandler, err := abstract.NewMetricsHandler(
 		logger.GetChild(string(metricshandler.NumOfRequestsMetricName)),
 		forwardAddress,
 		listenAddress,
@@ -49,9 +49,9 @@ func NewMetricsHandler(logger logger.Logger,
 		return nil, errors.Wrap(err, "Failed to create abstract metric handler")
 	}
 
-	newNumOfRequstsMetricsHandler.MetricsHandler = newAbstractMetricsHandler
+	numOfRequstsMetricsHandler.MetricsHandler = abstractMetricsHandler
 
-	return &newNumOfRequstsMetricsHandler, nil
+	return &numOfRequstsMetricsHandler, nil
 }
 
 func (n *metricsHandler) RegisterMetrics() error {
