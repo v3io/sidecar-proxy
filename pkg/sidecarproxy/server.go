@@ -1,13 +1,13 @@
 package sidecarproxy
 
 import (
-	"github.com/nuclio/errors"
 	"net/http"
 
 	"github.com/v3io/sidecar-proxy/pkg/common"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/factory"
 
+	"github.com/nuclio/errors"
 	"github.com/nuclio/logger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
