@@ -66,7 +66,7 @@ func (s *Server) Start() error {
 		go metricHandler.Start()
 	}
 
-	s.logger.Info("Starting to serve metrics")
+	s.logger.Info("Registering metrics endpoint")
 
 	// start server - metrics endpoint will be handled first and not be forwarded
 	http.Handle("/metrics", s.logMetrics(promhttp.Handler()))
