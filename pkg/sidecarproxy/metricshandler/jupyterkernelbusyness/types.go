@@ -21,8 +21,9 @@ func (k kernel) String() string {
 type KernelExecutionState string
 
 const (
-	IdleKernelExecutionState KernelExecutionState = "idle"
-	BusyKernelExecutionState KernelExecutionState = "busy"
+	IdleKernelExecutionState     KernelExecutionState = "idle"
+	BusyKernelExecutionState     KernelExecutionState = "busy"
+	StartingKernelExecutionState KernelExecutionState = "starting"
 )
 
 func parseKernelExecutionState(kernelExecutionStateStr string) (KernelExecutionState, error) {
@@ -31,6 +32,8 @@ func parseKernelExecutionState(kernelExecutionStateStr string) (KernelExecutionS
 		return BusyKernelExecutionState, nil
 	case string(IdleKernelExecutionState):
 		return IdleKernelExecutionState, nil
+	case string(StartingKernelExecutionState):
+		return StartingKernelExecutionState, nil
 	default:
 		return "", errors.Errorf("Unknown kernel execution state: %s", kernelExecutionStateStr)
 	}
