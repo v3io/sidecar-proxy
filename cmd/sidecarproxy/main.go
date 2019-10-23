@@ -27,7 +27,6 @@ func main() {
 	flag.Parse()
 
 	// logger conf
-	//var logger = logrus.New()
 	parsedLogLevel, err := logrus.ParseLevel(*logLevel)
 	if err != nil {
 		panic(err)
