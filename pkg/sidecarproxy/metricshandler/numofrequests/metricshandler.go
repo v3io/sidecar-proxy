@@ -7,7 +7,7 @@ import (
 
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/abstract"
-	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/util"
+	"github.com/v3io/sidecar-proxy/pkg/util"
 
 	"github.com/gorilla/websocket"
 	"github.com/koding/websocketproxy"

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/common"
+	"github.com/v3io/sidecar-proxy/pkg/common"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/jupyterkernelbusyness"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/numofrequests"

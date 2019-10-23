@@ -5,8 +5,8 @@ import (
 	"flag"
 	"os"
 
+	"github.com/v3io/sidecar-proxy/pkg/common"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy"
-	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/common"
 
 	"github.com/nuclio/loggerus"
 	"github.com/sirupsen/logrus"
