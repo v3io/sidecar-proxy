@@ -61,32 +61,37 @@ func (n *metricsHandler) RegisterMetrics() error {
 	return nil
 }
 
-func (n *metricsHandler) Start() {
+func (n *metricsHandler) Start() error {
 	n.Logger.Info("Starting jupyter kernel busyness metrics handler")
 	ticker := time.NewTicker(5 * time.Second)
-	errc := make(chan error)
 	go func() {
 		for range ticker.C {
-			kernels, err := n.getKernels()
-			if err != nil {
-				errc <- errors.Wrap(err, "Failed to get kernels")
+			if err := n.updateMetric(); err != nil {
+				n.Logger.WarnWith("Failed updating metric", "err", err)
 			}
-
-			busyKernelExists := n.searchBusyKernels(kernels)
-			var metricValue int
-			if busyKernelExists {
-				metricValue = 1
-			} else {
-
-				// If none of the kernels is busy - it's idle - set metric to 0
-				metricValue = 0
-			}
-			n.setMetric(metricValue)
 		}
 	}()
-	for err := range errc {
-		n.Logger.WarnWith("Failed setting metric", "err", err)
+	return nil
+}
+
+func (n *metricsHandler) updateMetric() error {
+	kernels, err := n.getKernels()
+	if err != nil {
+		return errors.Wrap(err, "Failed to get kernels")
 	}
+
+	busyKernelExists := n.searchBusyKernels(kernels)
+	var metricValue int
+	if busyKernelExists {
+		metricValue = 1
+	} else {
+
+		// If none of the kernels is busy - it's idle - set metric to 0
+		metricValue = 0
+	}
+	n.setMetric(metricValue)
+
+	return nil
 }
 
 func (n *metricsHandler) getKernels() ([]kernel, error) {

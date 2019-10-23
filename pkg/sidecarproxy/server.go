@@ -1,10 +1,12 @@
 package sidecarproxy
 
 import (
+	"github.com/nuclio/errors"
 	"net/http"
 
 	"github.com/v3io/sidecar-proxy/pkg/common"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler"
+	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/factory"
 
 	"github.com/nuclio/logger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -33,7 +35,7 @@ func NewServer(logger logger.Logger,
 
 	var metricsHandlers []metricshandler.MetricsHandler
 	for _, metricName := range metricNames {
-		metricsHandler, err := metricshandler.Create(metricName, logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
+		metricsHandler, err := factory.Create(metricName, logger, forwardAddress, listenAddress, namespace, serviceName, instanceName)
 		if err != nil {
 			panic(err)
 		}
@@ -60,7 +62,9 @@ func (s *Server) Start() error {
 
 	s.logger.Info("Starting metrics handlers")
 	for _, metricsHandler := range s.metricsHandlers {
-		go metricsHandler.Start()
+		if err := metricsHandler.Start(); err != nil {
+			return errors.Wrap(err, "Failed starting metrics handler")
+		}
 	}
 
 	s.logger.Info("Registering metrics endpoint")

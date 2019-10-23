@@ -26,7 +26,9 @@ var (
 
 type metricsHandler struct {
 	*abstract.MetricsHandler
-	metric *prometheus.CounterVec
+	metric         *prometheus.CounterVec
+	httpProxy      *httputil.ReverseProxy
+	webSocketProxy *websocketproxy.WebsocketProxy
 }
 
 func NewMetricsHandler(logger logger.Logger,
@@ -71,8 +73,28 @@ func (n *metricsHandler) RegisterMetrics() error {
 	return nil
 }
 
-func (n *metricsHandler) Start() {
-	http.HandleFunc("/", n.handleRequestAndRedirect)
+func (n *metricsHandler) Start() error {
+	http.HandleFunc("/", n.onRequest)
+	if err := n.initiateProxies(); err != nil {
+		return errors.Wrap(err, "Failed to initiate proxies")
+	}
+	return nil
+}
+
+func (n *metricsHandler) initiateProxies() error {
+	webSocketTargetURL, err := url.Parse("ws://" + n.ForwardAddress)
+	if err != nil {
+		return errors.Wrap(err, "Failed to parse web socket forward address")
+	}
+	n.webSocketProxy = websocketproxy.NewProxy(webSocketTargetURL)
+
+	httpTargetURL, err := url.Parse("http://" + n.ForwardAddress)
+	if err != nil {
+		return errors.Wrap(err, "Failed to parse http forward address")
+	}
+	n.httpProxy = httputil.NewSingleHostReverseProxy(httpTargetURL)
+
+	return nil
 }
 
 func (n *metricsHandler) incrementMetric() {
@@ -83,9 +105,8 @@ func (n *metricsHandler) incrementMetric() {
 	}).Inc()
 }
 
-// Given a request send it to the appropriate url
-func (n *metricsHandler) handleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
-	n.Logger.DebugWith("Received new request, forwarding",
+func (n *metricsHandler) onRequest(res http.ResponseWriter, req *http.Request) {
+	n.Logger.DebugWith("Received new request, handling",
 		"from", req.RemoteAddr,
 		"uri", req.RequestURI,
 		"method", req.Method)
@@ -93,30 +114,28 @@ func (n *metricsHandler) handleRequestAndRedirect(res http.ResponseWriter, req *
 	// update counter metric
 	n.incrementMetric()
 
-	// first check whether the connection can be "upgraded" to websocket, and by that decide which
-	// kind of proxy to use
-	var targetURL *url.URL
-	if n.isWebSocket(res, req) {
-		targetURL, _ = url.Parse("ws://" + n.ForwardAddress)
-		n.serveWebsocket(res, req, targetURL)
-	} else {
-		targetURL, _ = url.Parse("http://" + n.ForwardAddress)
-		n.serveHTTP(res, req, targetURL)
+	if err := n.forwardRequest(res, req); err != nil {
+		res.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
-	n.Logger.DebugWith("Forwarded to target", "url", targetURL)
+	n.Logger.Debug("Forwarded request")
+}
+
+func (n *metricsHandler) forwardRequest(res http.ResponseWriter, req *http.Request) error {
+	proxyHandler := n.getProxyHandler(res, req)
+	proxyHandler.ServeHTTP(res, req)
+	return nil
+}
+
+func (n *metricsHandler) getProxyHandler(res http.ResponseWriter, req *http.Request) http.Handler {
+	if n.isWebSocket(res, req) {
+		return n.webSocketProxy
+	} else {
+		return n.httpProxy
+	}
 }
 
 func (n *metricsHandler) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
 	return WebsocketUpgrader.VerifyWebSocket(res, req, nil) == nil
-}
-
-func (n *metricsHandler) serveHTTP(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
-	proxy := httputil.NewSingleHostReverseProxy(targetURL)
-	proxy.ServeHTTP(res, req)
-}
-
-func (n *metricsHandler) serveWebsocket(res http.ResponseWriter, req *http.Request, targetURL *url.URL) {
-	proxy := websocketproxy.NewProxy(targetURL)
-	proxy.ServeHTTP(res, req)
 }

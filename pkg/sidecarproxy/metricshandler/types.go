@@ -2,7 +2,7 @@ package metricshandler
 
 type MetricsHandler interface {
 	RegisterMetrics() error
-	Start()
+	Start() error
 }
 
 type MetricName string
