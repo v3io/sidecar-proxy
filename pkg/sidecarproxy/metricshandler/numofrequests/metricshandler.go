@@ -74,13 +74,13 @@ func (n *metricsHandler) RegisterMetrics() error {
 
 func (n *metricsHandler) Start() error {
 	http.HandleFunc("/", n.onRequest)
-	if err := n.initiateProxies(); err != nil {
+	if err := n.createProxies(); err != nil {
 		return errors.Wrap(err, "Failed to initiate proxies")
 	}
 	return nil
 }
 
-func (n *metricsHandler) initiateProxies() error {
+func (n *metricsHandler) createProxies() error {
 	webSocketTargetURL, err := url.Parse("ws://" + n.ForwardAddress)
 	if err != nil {
 		return errors.Wrap(err, "Failed to parse web socket forward address")
