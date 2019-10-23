@@ -55,8 +55,7 @@ func (s *Server) Start() error {
 	s.logger.Info("Registering metrics")
 	for _, metricsHandler := range s.metricsHandlers {
 		if err := metricsHandler.RegisterMetrics(); err != nil {
-			s.logger.ErrorWith("Failed registering metrics", "err", err)
-			return err
+			return errors.Wrap(err, "Failed registering metrics")
 		}
 	}
 
@@ -73,8 +72,7 @@ func (s *Server) Start() error {
 	http.Handle("/metrics", s.logMetrics(promhttp.Handler()))
 
 	if err := http.ListenAndServe(s.listenAddress, nil); err != nil {
-		s.logger.ErrorWith("Failed while listening to incoming requests", "err", err)
-		return err
+		return errors.Wrap(err, "Failed while listening to incoming requests")
 	}
 
 	return nil

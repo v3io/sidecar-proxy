@@ -8,6 +8,7 @@ import (
 	"github.com/v3io/sidecar-proxy/pkg/common"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy"
 
+	"github.com/nuclio/errors"
 	"github.com/nuclio/loggerus"
 	"github.com/sirupsen/logrus"
 )
@@ -43,7 +44,7 @@ func main() {
 	// server start
 	server, err := sidecarproxy.NewServer(logger, *listenAddress, *forwardAddress, *namespace, *serviceName, *instanceName, metricNames)
 	if err != nil {
-		logger.ErrorWith("Failed to create a proxy server", "err", err)
+		panic(err)
 	}
 	if err = server.Start(); err != nil {
 		panic(err)
