@@ -77,6 +77,9 @@ func (n *metricsHandler) Start() error {
 	if err := n.createProxies(); err != nil {
 		return errors.Wrap(err, "Failed to initiate proxies")
 	}
+
+	// adds one data point on service initialization so metric will be initialized and queryable
+	n.incrementMetric()
 	return nil
 }
 
