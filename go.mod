@@ -5,8 +5,6 @@ go 1.13
 require (
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
-	github.com/gorilla/websocket v1.4.1
-	github.com/koding/websocketproxy v0.0.0-20181220232114-7ed82d81a28c
 	github.com/nuclio/errors v0.0.1
 	github.com/nuclio/logger v0.0.1
 	github.com/nuclio/loggerus v0.0.1

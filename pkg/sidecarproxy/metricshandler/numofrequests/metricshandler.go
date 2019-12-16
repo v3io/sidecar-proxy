@@ -7,28 +7,16 @@ import (
 
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/abstract"
-	"github.com/v3io/sidecar-proxy/pkg/util"
 
-	"github.com/gorilla/websocket"
-	"github.com/koding/websocketproxy"
 	"github.com/nuclio/errors"
 	"github.com/nuclio/logger"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-var (
-	WebsocketUpgrader = util.ExtendedWebSocket{
-		WebsocketUpgrader: websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-		}}
-)
-
 type metricsHandler struct {
 	*abstract.MetricsHandler
-	metric         *prometheus.CounterVec
-	httpProxy      *httputil.ReverseProxy
-	webSocketProxy *websocketproxy.WebsocketProxy
+	metric *prometheus.CounterVec
+	proxy  *httputil.ReverseProxy
 }
 
 func NewMetricsHandler(logger logger.Logger,
@@ -74,8 +62,8 @@ func (n *metricsHandler) RegisterMetrics() error {
 
 func (n *metricsHandler) Start() error {
 	http.HandleFunc("/", n.onRequest)
-	if err := n.createProxies(); err != nil {
-		return errors.Wrap(err, "Failed to initiate proxies")
+	if err := n.createProxy(); err != nil {
+		return errors.Wrap(err, "Failed to initiate proxy")
 	}
 
 	// adds one data point on service initialization so metric will be initialized and queryable
@@ -83,18 +71,12 @@ func (n *metricsHandler) Start() error {
 	return nil
 }
 
-func (n *metricsHandler) createProxies() error {
-	webSocketTargetURL, err := url.Parse("ws://" + n.ForwardAddress)
-	if err != nil {
-		return errors.Wrap(err, "Failed to parse web socket forward address")
-	}
-	n.webSocketProxy = websocketproxy.NewProxy(webSocketTargetURL)
-
+func (n *metricsHandler) createProxy() error {
 	httpTargetURL, err := url.Parse("http://" + n.ForwardAddress)
 	if err != nil {
 		return errors.Wrap(err, "Failed to parse http forward address")
 	}
-	n.httpProxy = httputil.NewSingleHostReverseProxy(httpTargetURL)
+	n.proxy = httputil.NewSingleHostReverseProxy(httpTargetURL)
 
 	return nil
 }
@@ -125,18 +107,6 @@ func (n *metricsHandler) onRequest(res http.ResponseWriter, req *http.Request) {
 }
 
 func (n *metricsHandler) forwardRequest(res http.ResponseWriter, req *http.Request) error {
-	proxyHandler := n.getProxyHandler(res, req)
-	proxyHandler.ServeHTTP(res, req)
+	n.proxy.ServeHTTP(res, req)
 	return nil
-}
-
-func (n *metricsHandler) getProxyHandler(res http.ResponseWriter, req *http.Request) http.Handler {
-	if n.isWebSocket(res, req) {
-		return n.webSocketProxy
-	}
-	return n.httpProxy
-}
-
-func (n *metricsHandler) isWebSocket(res http.ResponseWriter, req *http.Request) bool {
-	return WebsocketUpgrader.VerifyWebSocket(res, req, nil) == nil
 }

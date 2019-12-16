@@ -4,8 +4,7 @@ facilitate scale-to-zero flows.
 
 Supported metrics:
 1. General:
-    * `num_of_requests` - prometheus `CounterVec` that simply counts requests using a reverse proxy. Supports both HTTP 
-    (Go's built in ReverseProxy) and Websocket (https://github.com/koding/websocketproxy) requests<br>
+    * `num_of_requests` - prometheus `CounterVec` that simply counts requests using a reverse proxy (Go's built in ReverseProxy)<br>
 2. Service specific:
     * Jupyter:
         * `jupyter_kernel_busyness` - prometheus `GaugeVec` that is set to 1 if Jupyter has one or more busy kernels, 
