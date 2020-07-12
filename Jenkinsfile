@@ -8,7 +8,7 @@ git_deploy_user_private_key = "iguazio-prod-git-user-private-key"
 
 podTemplate(label: "${git_project}-${label}", inheritFrom: "jnlp-docker-golang") {
     node("${git_project}-${label}") {
-        pipelinex = library(identifier: 'pipelinex@development', retriever: modernSCM(
+        pipelinex = library(identifier: 'pipelinex@_prod_gcr', retriever: modernSCM(
                 [$class       : 'GitSCMSource',
                  credentialsId: git_deploy_user_private_key,
                  remote       : "git@github.com:iguazio/pipelinex.git"])).com.iguazio.pipelinex
