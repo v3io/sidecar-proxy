@@ -30,7 +30,7 @@ func run() error {
 	if err != nil {
 		errors.Wrap(err, "Failed to parse log level")
 	}
-	logger, err := loggerus.NewTextLoggerus("main", parsedLogLevel, os.Stdout, true)
+	logger, err := loggerus.NewJSONLoggerus("main", parsedLogLevel, os.Stdout)
 	if err != nil {
 		errors.Wrap(err, "Failed to create new logger")
 	}
