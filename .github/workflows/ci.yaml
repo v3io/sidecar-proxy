@@ -17,6 +17,8 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
+    - uses: AutoModality/action-clean@v1
+
     - uses: actions/checkout@v2
 
     - uses: actions/setup-go@v2
@@ -30,6 +32,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+    - uses: AutoModality/action-clean@v1
+
     - uses: actions/checkout@v2
 
     - uses: actions/setup-go@v2
