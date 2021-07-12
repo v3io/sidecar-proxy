@@ -9,7 +9,7 @@ BIN_DIR=$(pwd)/.bin/
 echo "Creating bin directory: ${BIN_DIR}"
 mkdir -p ${BIN_DIR}
 
-if [[ ! -f ${BIN_DIR}/impi ]]
+if [[ ! -f "${BIN_DIR}/impi" ]]
   then
     echo "impi binary does not exist. Fetching and installing..."
     curl -sSfL https://api.github.com/repos/pavius/impi/releases/latest \
