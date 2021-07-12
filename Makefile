@@ -17,34 +17,8 @@ bin:
 
 .PHONY: lint
 lint:
-	@echo Installing linters...
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(GOPATH)/bin v1.21.0
-
-	@echo Linting...
-	@$(GOPATH)/bin/golangci-lint run \
-		--deadline=300s \
-		--disable-all \
-		--enable=deadcode \
-		--enable=goconst \
-		--enable=gofmt \
-		--enable=golint \
-		--enable=gosimple \
-		--enable=ineffassign \
-		--enable=interfacer \
-		--enable=misspell \
-		--enable=staticcheck \
-		--enable=unconvert \
-		--enable=varcheck \
-		--enable=vet \
-		--enable=vetshadow \
-		--enable=errcheck \
-		--exclude="_test.go" \
-		--exclude="comment on" \
-		--exclude="error should be the last" \
-		--exclude="should have comment" \
-		./pkg/...
-
-	@echo Done.
+	./hack/lint/install.sh
+	./hack/lint/run.sh
 
 .PHONY: vet
 vet:
