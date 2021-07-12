@@ -28,11 +28,11 @@ func run() error {
 	// logger conf
 	parsedLogLevel, err := logrus.ParseLevel(*logLevel)
 	if err != nil {
-		errors.Wrap(err, "Failed to parse log level")
+		return errors.Wrap(err, "Failed to parse log level")
 	}
 	logger, err := loggerus.NewTextLoggerus("main", parsedLogLevel, os.Stdout, true)
 	if err != nil {
-		errors.Wrap(err, "Failed to create new logger")
+		return errors.Wrap(err, "Failed to create new logger")
 	}
 
 	if len(metricNames) == 0 {
@@ -42,10 +42,10 @@ func run() error {
 	// server start
 	server, err := sidecarproxy.NewServer(logger, *listenAddress, *forwardAddress, *namespace, *serviceName, *instanceName, metricNames)
 	if err != nil {
-		errors.Wrap(err, "Failed to create new server")
+		return errors.Wrap(err, "Failed to create new server")
 	}
 	if err = server.Start(); err != nil {
-		errors.Wrap(err, "Failed to start server")
+		return errors.Wrap(err, "Failed to start server")
 	}
 
 	return nil
