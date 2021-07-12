@@ -26,7 +26,7 @@ jobs:
     - name: Run lint
       run: make lint
       env:
-        FORCE_INSTALL: true
+        BIN_DIR: /bin
 
   build:
     name: Build

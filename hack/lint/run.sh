@@ -7,6 +7,7 @@ if [[ -z "${BIN_DIR}" ]]; then
   BIN_DIR=$(pwd)/.bin
 fi
 
+# TODO: resolve import issues and enable
 #echo Verifying imports...
 #
 #${BIN_DIR}/impi \
