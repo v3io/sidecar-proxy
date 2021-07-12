@@ -11,40 +11,14 @@ all: lint build
 build:
 	docker build -f cmd/sidecarproxy/Dockerfile --tag=$(PROXY_REPOSITORY)sidecar-proxy:$(PROXY_TAG) .
 
-.PHONY: ensure-gopath bin
+.PHONY: bin
 bin:
 	$(PROXY_BUILD_COMMAND)
 
 .PHONY: lint
-lint: ensure-gopath
-	@echo Installing linters...
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(GOPATH)/bin v1.21.0
-
-	@echo Linting...
-	@$(GOPATH)/bin/golangci-lint run \
-		--deadline=300s \
-		--disable-all \
-		--enable=deadcode \
-		--enable=goconst \
-		--enable=gofmt \
-		--enable=golint \
-		--enable=gosimple \
-		--enable=ineffassign \
-		--enable=interfacer \
-		--enable=misspell \
-		--enable=staticcheck \
-		--enable=unconvert \
-		--enable=varcheck \
-		--enable=vet \
-		--enable=vetshadow \
-		--enable=errcheck \
-		--exclude="_test.go" \
-		--exclude="comment on" \
-		--exclude="error should be the last" \
-		--exclude="should have comment" \
-		./pkg/...
-
-	@echo Done.
+lint:
+	./hack/lint/install.sh
+	./hack/lint/run.sh
 
 .PHONY: vet
 vet:
@@ -53,9 +27,3 @@ vet:
 .PHONY: test
 test:
 	go test -v ./app/...
-
-.PHONY: ensure-gopath
-ensure-gopath:
-ifndef GOPATH
-	$(error GOPATH must be set)
-endif
