@@ -15,9 +15,12 @@ build:
 bin:
 	$(PROXY_BUILD_COMMAND)
 
-.PHONY: lint
-lint:
+.PHONY: ensure-lint-tools
+ensure-lint-tools:
 	./hack/lint/install.sh
+
+.PHONY: lint
+lint: ensure-lint-tools
 	./hack/lint/run.sh
 
 .PHONY: vet
