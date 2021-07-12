@@ -2,8 +2,6 @@
 set -e
 
 # NOTE: RUN THAT from repo root
-echo BIN_DIR="${BIN_DIR}"
-
 if [[ -z "${BIN_DIR}" ]]; then
   BIN_DIR=$(pwd)/.bin
 fi
