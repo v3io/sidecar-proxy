@@ -26,6 +26,8 @@ if [[ ( "${FORCE_INSTALL}" == "true" ) || ( $# -ne 0 && "$1" == "force" ) ]]; th
   FORCE_INSTALL=true
 fi
 
+cat "${BIN_DIR}/golangci-lint"
+
 if [[ ( "${FORCE_INSTALL}" == "true" ) || ( ! -f "${BIN_DIR}/golangci-lint" ) ]]; then
   echo "golangci-lint binary does not exist or force install requested. Fetching and installing..."
 
