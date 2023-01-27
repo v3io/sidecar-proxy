@@ -1,12 +1,17 @@
-PROXY_TAG ?= latest
-PROXY_REPOSITORY ?= v3io/
+LABEL ?= unstable
+REPOSITORY ?= gcr.io/iguazio
+IMAGE = $(REPOSITORY)/sidecar-proxy:$(LABEL)
 
 .PHONY: build
 build:
-	docker build \
+	@docker build \
 		--file cmd/sidecarproxy/Dockerfile \
-		--tag=$(PROXY_REPOSITORY)sidecar-proxy:$(PROXY_TAG) \
+		--tag=$(IMAGE) \
 		.
+
+.PHONY: push
+push:
+	docker push $(IMAGE)
 
 .PHONY: lint
 lint:
