@@ -1,29 +1,27 @@
-PROXY_PATH ?= src/github.com/v3io/proxy
-PROXY_TAG ?= latest
-PROXY_REPOSITORY ?= v3io/
-PROXY_BUILD_COMMAND ?= GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags="-s -w" -o $(GOPATH)/bin/proxy_server $(GOPATH)/$(PROXY_PATH)/main.go
-
-.PHONY: all
-all: lint build
-	@echo Done.
+LABEL ?= unstable
+REPOSITORY ?= gcr.io/iguazio
+IMAGE = $(REPOSITORY)/sidecar-proxy:$(LABEL)
 
 .PHONY: build
 build:
-	docker build -f cmd/sidecarproxy/Dockerfile --tag=$(PROXY_REPOSITORY)sidecar-proxy:$(PROXY_TAG) .
+	@docker build \
+		--file cmd/sidecarproxy/Dockerfile \
+		--tag=$(IMAGE) \
+		.
 
-.PHONY: bin
-bin:
-	$(PROXY_BUILD_COMMAND)
+.PHONY: push
+push:
+	docker push $(IMAGE)
 
 .PHONY: lint
 lint:
 	./hack/lint/install.sh
 	./hack/lint/run.sh
 
-.PHONY: vet
-vet:
-	go vet ./app/...
+.PHONY: fmt
+fmt:
+	@go fmt $(shell go list ./... | grep -v /vendor/)
 
 .PHONY: test
 test:
-	go test -v ./app/...
+	go test -p1 -v ./pkg/...
