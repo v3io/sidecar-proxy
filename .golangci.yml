@@ -2,11 +2,11 @@ linters:
   disable-all: true
   enable:
     - deadcode
+    - goconst
     - gofmt
-    - golint
+    - revive
     - gosimple
     - ineffassign
-    - interfacer
     - misspell
     - staticcheck
     - unconvert
@@ -14,18 +14,30 @@ linters:
     - vet
     - vetshadow
     - errcheck
+    - govet
+    - structcheck
+    - typecheck
+    - gocritic
 
 run:
 
   # timeout for analysis
-  timeout: 10m
-
-  # include test files or not, default is true
-  tests: false
+  timeout: 5m
 
   skip-dirs:
     - hack
-    - docs
+
+linters-settings:
+  revive:
+    rules:
+
+      # avoid  errorf: should replace errors.New(fmt.Sprintf(...)) with fmt.Errorf(...)  messages
+      - name: errorf
+        disabled: true
+
+  gocritic:
+    disabled-checks:
+      - commentFormatting # we dont want to enforce space before the comment text
 
 issues:
 
@@ -33,4 +45,10 @@ issues:
   exclude:
     - "comment on"
     - "error should be the last"
-    - "should have comment"
+
+  exclude-rules:
+
+    # list of excluded linters applied on test files
+    - path: _test\.go
+      linters:
+        - goconst
