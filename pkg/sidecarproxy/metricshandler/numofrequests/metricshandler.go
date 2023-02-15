@@ -19,9 +19,11 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/v3io/sidecar-proxy/pkg/common"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler"
 	"github.com/v3io/sidecar-proxy/pkg/sidecarproxy/metricshandler/abstract"
 
@@ -85,6 +87,8 @@ func (n *metricsHandler) Start() error {
 		return errors.Wrap(err, "Failed to initiate proxy")
 	}
 
+	go n.monitorSSHConnection()
+
 	// adds one data point on service initialization so metric will be initialized and queryable
 	n.incrementMetric()
 	return nil
@@ -144,4 +148,42 @@ func (n *metricsHandler) onRequest(res http.ResponseWriter, req *http.Request) {
 func (n *metricsHandler) forwardRequest(res http.ResponseWriter, req *http.Request) error {
 	n.proxy.ServeHTTP(res, req)
 	return nil
+}
+
+// monitorSSHConnection runs in a goroutine and checks if the ssh connection is still alive, by reading a file shared
+// between the sidecar and main container.
+func (n *metricsHandler) monitorSSHConnection() {
+	filePath := metricshandler.OpenSSHConnectionFilePath
+
+	n.Logger.Info("Starting SSH connection monitor", "filePath", filePath)
+
+	// create a ticker that will check the file every 10 seconds
+	ticker := time.NewTicker(10 * time.Second)
+	for range ticker.C {
+
+		// if the file doesn't exist, do nothing
+		if exists, err := common.FileExists(filePath); !exists {
+			if err != nil {
+				n.Logger.WarnWith("Failed to check if file exists", "err", err)
+			}
+			continue
+		}
+
+		// file exists, read it
+		contentBytes, err := os.ReadFile(filePath)
+		if err != nil {
+			n.Logger.WarnWith("Failed to read file", "err", err)
+			continue
+		}
+
+		// convert content to a 'string'
+		content := strings.TrimSpace(string(contentBytes))
+
+		// if it contains "1", the connection is alive - increment the metric
+		// otherwise, do nothing
+		if content == metricshandler.SSHConnectionIsAlive {
+			n.Logger.Debug("SSH connection is alive, incrementing metric")
+			n.incrementMetric()
+		}
+	}
 }

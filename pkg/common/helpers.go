@@ -15,6 +15,12 @@
 
 package common
 
+import (
+	"os"
+
+	"github.com/nuclio/errors"
+)
+
 func StringInSlice(s string, slice []string) bool {
 	for _, str := range slice {
 		if str == s {
@@ -22,4 +28,18 @@ func StringInSlice(s string, slice []string) bool {
 		}
 	}
 	return false
+}
+
+// FileExists returns true if the given file exists
+func FileExists(filePath string) (bool, error) {
+	_, err := os.Stat(filePath)
+	if err == nil {
+		return true, nil
+
+	} else if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+
+	// sanity: file may or may not exist
+	return false, err
 }
