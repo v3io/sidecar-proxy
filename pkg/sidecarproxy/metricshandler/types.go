@@ -26,3 +26,8 @@ const (
 	NumOfRequestsMetricName         MetricName = "num_of_requests"
 	JupyterKernelBusynessMetricName MetricName = "jupyter_kernel_busyness"
 )
+
+const (
+	OpenSSHConnectionFilePath = "/intercontainer/opensshconnection"
+	SSHConnectionIsAlive      = "1"
+)
