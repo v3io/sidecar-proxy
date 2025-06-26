@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-FROM gcr.io/iguazio/golang:1.19 as builder
+FROM gcr.io/iguazio/golang:1.23 as builder
 
 # copy source tree
 WORKDIR /sidecar-proxy
