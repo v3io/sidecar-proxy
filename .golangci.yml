@@ -1,7 +1,6 @@
 linters:
   disable-all: true
   enable:
-    - deadcode
     - goconst
     - gofmt
     - revive
@@ -10,14 +9,12 @@ linters:
     - misspell
     - staticcheck
     - unconvert
-    - varcheck
-    - vet
-    - vetshadow
     - errcheck
     - govet
-    - structcheck
     - typecheck
     - gocritic
+    - unused
+    - gci
 
 run:
 
@@ -52,3 +49,4 @@ issues:
     - path: _test\.go
       linters:
         - goconst
+version: 2
