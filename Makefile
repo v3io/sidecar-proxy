@@ -1,6 +1,7 @@
 LABEL ?= unstable
 REPOSITORY ?= gcr.io/iguazio
 IMAGE = $(REPOSITORY)/sidecar-proxy:$(LABEL)
+GOPATH ?= $(shell go env GOPATH)
 
 .PHONY: build
 build:
