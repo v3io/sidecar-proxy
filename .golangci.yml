@@ -21,9 +21,6 @@ run:
   # timeout for analysis
   timeout: 5m
 
-  skip-dirs:
-    - hack
-
 linters-settings:
   revive:
     rules:
@@ -36,8 +33,19 @@ linters-settings:
     disabled-checks:
       - commentFormatting # we dont want to enforce space before the comment text
 
-issues:
+  gci:
+    sections:
+      - standard
+      - prefix(github.com/v3io/sidecar-proxy)
+      - default
+      - blank
+      - dot
 
+    custom-order: true
+
+issues:
+  exclude-dirs:
+    - hack
   # List of regexps of issue texts to exclude
   exclude:
     - "comment on"
