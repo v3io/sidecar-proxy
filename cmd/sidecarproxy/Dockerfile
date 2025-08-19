@@ -33,7 +33,7 @@ RUN GOOS=linux \
 # Output stage: Copies binary to an alpine based image
 #
 
-FROM gcr.io/iguazio/alpine:3.17
+FROM gcr.io/iguazio/alpine:3.22
 
 # copy app binary from build stage
 COPY --from=builder /sidecar-proxy/proxy_server /usr/local/bin
